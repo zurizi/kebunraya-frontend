@@ -2,9 +2,11 @@
 <template>
   <div class="min-h-screen bg-gray-100">
     <AppHeader />
-    <main class="pt-24 3xl:pt-28">
+    <main class="pt-24 pb-32 3xl:pt-28">
       <slot />
     </main>
+    <Footer />
+
   </div>
 </template>
 
