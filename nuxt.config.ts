@@ -5,7 +5,6 @@ import mkcert from "vite-plugin-mkcert";
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
-
   modules: ["@nuxtjs/tailwindcss", "@vite-pwa/nuxt", "@nuxt/image"],
 
   // Konfigurasi PWA
@@ -45,7 +44,7 @@ export default defineNuxtConfig({
     server: {
       https: true,
       host: "localhost",
-      port: 3000,
+      port: 3001,
     },
   },
   // Konfigurasi app
@@ -53,7 +52,7 @@ export default defineNuxtConfig({
     head: {
       charset: "utf-8",
       viewport: "width=device-width, initial-scale=1",
-      title: "Nuxt 3 Starter Template",
+      title: "Kebun Raya Bundahayati",
       link: [
         { rel: "manifest", href: "/manifest.webmanifest" },
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -70,7 +69,7 @@ export default defineNuxtConfig({
       meta: [
         {
           name: "description",
-          content: "Nuxt 3 Starter with Tailwind CSS, PWA, Axios, and Pinia",
+          content: "Selamat datang di Kebun Raya Bulungan, tempat di mana flora endemik, budaya lokal, dan konservasi alam bertemu untuk menciptakan masa depan yang berkelanjutan.",
         },
       ],
     },
