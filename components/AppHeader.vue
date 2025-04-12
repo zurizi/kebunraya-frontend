@@ -99,7 +99,7 @@ const navItems = [
   { text: "Konservasi", to: "/" },
   { text: "Kegiatan", to: "/kegiatan" },
   { text: "Maps", to: "/maps" },
-  { text: "Kegiatan", to: "/" },
+  { text: "Tentang Kami", to: "/tentang-kami" },
 ];
 </script>
 
