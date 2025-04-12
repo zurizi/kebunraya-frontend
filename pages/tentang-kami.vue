@@ -67,11 +67,11 @@
                       jenis-jenis yang sesuai dengan tema koleksi — terutama
                       jenis-jenis lokal, endemik, langka, berpotensi ekonomi dan
                       mampu beradaptasi dengan baik di lokasi Kebun Raya Bunda
-                      Hayati Kabupaten Bulungan;
+                      Hayati Kabupaten Bulungan
                     </li>
                     <li>
                       Menyediakan sarana dan prasarana penelitian di bidang
-                      konservasi berbasis koleksi tumbuhan yang dimiliki;
+                      konservasi berbasis koleksi tumbuhan yang dimiliki
                     </li>
                     <li>
                       Meningkatkan kesejahteraan masyarakat sekitar baik dari

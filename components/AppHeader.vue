@@ -51,8 +51,16 @@
               :key="index"
               class="relative text-font1"
             >
-              <nuxt-link :to="item.to" class="px-1 py-2 font-semibold">
-                {{ item.text }} 
+              <nuxt-link
+                :to="item.to"
+                class="px-1 pt-2 pb-1 font-semibold"
+                :class="{
+                  'text-primary border-b-2 border-black':
+                    route.path === item.to,
+                  'text-font1': route.path !== item.to,
+                }"
+              >
+                {{ item.text }}
               </nuxt-link>
             </li>
           </ul>
@@ -71,7 +79,14 @@
           class="w-full pb-4 border-b border-line-border"
           @click="toggleNav = false"
         >
-          <nuxt-link :to="item.to" class="hover:translate-x-2">
+          <nuxt-link
+            :to="item.to"
+            class="hover:translate-x-2"
+            :class="{
+              'text-primary font-semibold': route.path === item.to,
+              'text-font1': route.path !== item.to,
+            }"
+          >
             {{ item.text }}
           </nuxt-link>
         </li>
@@ -82,6 +97,9 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
+import { useRoute } from "vue-router";
+
+const route = useRoute();
 
 const { login } = defineProps({
   login: {
