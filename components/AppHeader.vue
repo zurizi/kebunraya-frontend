@@ -114,7 +114,7 @@ const showDropdown = ref<Record<number, boolean>>({});
 const navItems = [
   { text: "Home", to: "/" },
   { text: "Monitoring", to: "/monitoring" },
-  { text: "Konservasi", to: "/" },
+  { text: "Konservasi", to: "/konservasi" },
   { text: "Kegiatan", to: "/kegiatan" },
   { text: "Maps", to: "/maps" },
   { text: "Tentang Kami", to: "/tentang-kami" },
