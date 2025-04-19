@@ -39,13 +39,16 @@ export default defineNuxtConfig({
     quality: 100,
     format: ["webp"],
   },
-  vite: {
-    plugins: [mkcert()],
-    server: {
-      https: true,
-      host: "localhost",
-      port: 3001,
+  runtimeConfig: {
+    public: {
+      axios: {
+        baseURL: "http://backend-kebunraya.test/api/",
+      },
+      imgURL : "http://backend-kebunraya.test/"
     },
+  },
+  devServer: {
+    port: 2000 // Ganti 8000 dengan port yang Anda inginkan
   },
   // Konfigurasi app
   app: {
