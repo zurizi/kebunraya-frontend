@@ -1,68 +1,8 @@
-<script setup lang="ts">
-import { ref, watch } from 'vue'; // Import ref dan watch
-import { useNuxtApp, useAsyncData } from "#app";
-
-// Akses instance Axios dan runtime config
-const { $api } = useNuxtApp();
-const runtimeConfig = useRuntimeConfig();
-
-// State untuk halaman saat ini dan total halaman
-const currentPage = ref(1); // Mulai dari halaman 1
-const totalPages = ref(1); // Inisialisasi total halaman
-
-// Menggunakan useAsyncData untuk mengambil data
-const {
-  data: apiResponse,
-  pending,
-  error,
-  refresh // Tambahkan fungsi refresh untuk memicu pengambilan data ulang
-} = await useAsyncData(`plants-${currentPage.value}`, async () => { // Kunci useAsyncData dinamis berdasarkan halaman
-  try {
-    // Panggil API dengan parameter 'page'
-    const response = await $api.get('/plants', {
-      params: {
-        page: currentPage.value, // Kirim halaman saat ini sebagai parameter query
-        // limit: 9 // Anda mungkin juga perlu mengirim parameter limit/perPage
-      }
-    });
-    // Periksa struktur respons API untuk metadata paginasi
-    if (response.data && response.data.status === 'success' && response.data.data.last_page !== undefined) {
-       // Update total halaman dari respons API
-      totalPages.value = response.data.data.last_page;
-      // Kembalikan array data tanaman
-      return response.data; // Kembalikan seluruh objek respons yang berisi data dan metadata
-    } else {
-       // Tangani jika struktur respons tidak sesuai harapan
-      console.error("Unexpected API response structure:", response.data);
-      totalPages.value = 1; // Reset total halaman
-      return { data: [], status: 'error' }; // Kembalikan struktur respons yang aman
-    }
-
-  } catch (err) {
-    console.error("Error fetching plants:", err);
-    totalPages.value = 1; // Reset total halaman jika ada error
-    throw err; // Lempar error
-  }
-}, {
-  watch: [currentPage] // useAsyncData akan otomatis berjalan ulang setiap kali currentPage berubah
-});
-
-// Tidak perlu watcher terpisah karena useAsyncData sudah menggunakan `watch: [currentPage]`
-// dan kita langsung menggunakan apiResponse.value.data di template.
-
-// Fungsi untuk mengubah halaman yang dipanggil dari komponen pagination
-const updatePage = (page: number) => {
-  currentPage.value = page;
-  // useAsyncData akan otomatis refetch karena `watch: [currentPage]`
-};
-</script>
-
 <template>
   <div
     class="flex flex-col px-4 py-12 mx-auto space-y-4 max-w-7xl sm:px-6 lg:px-8"
   >
-    <SearchInput />
-
+    <SearchInput v-model="searchText" placeholder="Cari Tanaman" />
     <div v-if="pending">Loading tanaman...</div>
 
     <div v-else-if="error">Terjadi kesalahan saat mengambil data tanaman.</div>
@@ -71,13 +11,13 @@ const updatePage = (page: number) => {
       v-else-if="
         apiResponse &&
         apiResponse.status === 'success' &&
-        Array.isArray(apiResponse.data.data) && 
+        Array.isArray(apiResponse.data.data) &&
         apiResponse.data.data.length > 0
       "
       class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
     >
       <nuxt-link
-        v-for="plant in apiResponse.data.data" 
+        v-for="plant in apiResponse.data.data"
         :to="`/konservasi/${plant.id}`"
         :key="plant.id"
         class="flex flex-col overflow-hidden shadow rounded-3xl"
@@ -85,7 +25,9 @@ const updatePage = (page: number) => {
         <img
           :src="
             plant.gambar
-              ? `${runtimeConfig.public.imgURL || runtimeConfig.public.imgURL}/${plant.gambar}` 
+              ? `${
+                  runtimeConfig.public.imgURL || runtimeConfig.public.imageCDN
+                }/${plant.gambar}`
               : '/placeholder-image.jpg'
           "
           :alt="`Gambar ${plant.nama_lokal || 'Tanaman'}`"
@@ -145,13 +87,113 @@ const updatePage = (page: number) => {
     </div>
 
     <div v-else>Tidak ada data tanaman ditemukan.</div>
-
-     <Pagination
-      v-if="apiResponse && apiResponse.data.data && apiResponse.data.data.length > 0 && totalPages > 1"
+    <Pagination
+      v-if="
+        apiResponse &&
+        apiResponse.data.data &&
+        apiResponse.data.data.length > 0 &&
+        totalPages > 1
+      "
       v-model:currentPage="currentPage"
       :totalPages="totalPages"
       @page-change="updatePage"
     />
-
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, watch } from "vue";
+import { useNuxtApp, useAsyncData, useRuntimeConfig } from "#app";
+
+const { $api } = useNuxtApp();
+const runtimeConfig = useRuntimeConfig();
+
+const currentPage = ref(1);
+const totalPages = ref(1);
+
+const searchText = ref("");
+
+const debouncedSearchText = ref("");
+
+let debounceTimer: NodeJS.Timeout | null = null;
+const debounceDelay = 2000; // 2 detik
+
+watch(searchText, (newValue) => {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+  }
+
+  debounceTimer = setTimeout(() => {
+    debouncedSearchText.value = newValue;
+
+    currentPage.value = 1;
+  }, debounceDelay);
+});
+
+const {
+  data: apiResponse,
+  pending,
+  error,
+} = await useAsyncData(
+  `plants-${currentPage.value}-${debouncedSearchText.value}`,
+  async () => {
+    console.log(
+      `Workspaceing plants - Page: ${currentPage.value}, Search: ${debouncedSearchText.value}`
+    );
+    try {
+      const response = await $api.get("/plants", {
+        params: {
+          page: currentPage.value,
+          search: debouncedSearchText.value,
+        },
+      });
+
+      if (
+        response.data &&
+        response.data.status === "success" &&
+        response.data.data &&
+        response.data.data.last_page !== undefined
+      ) {
+        totalPages.value = response.data.data.last_page;
+
+        return response.data;
+      } else if (
+        response.data &&
+        response.data.status === "success" &&
+        Array.isArray(response.data.data) &&
+        response.data.data.last_page !== undefined
+      ) {
+        totalPages.value = response.data.data.last_page;
+
+        return response.data;
+      } else {
+        console.error("Unexpected API response structure:", response.data);
+        totalPages.value = 1;
+
+        return { data: [], status: "error", last_page: 1 };
+      }
+    } catch (err: any) {
+      console.error("Error fetching plants:", err);
+      totalPages.value = 1;
+      if (err.response && err.response.status === 404) {
+        return { data: [], status: "success", last_page: 1 };
+      }
+      throw err;
+    }
+  },
+  {
+    watch: [currentPage, debouncedSearchText],
+  }
+);
+
+const updatePage = (page: number) => {
+  currentPage.value = page;
+};
+
+import { onBeforeUnmount } from "vue";
+onBeforeUnmount(() => {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+  }
+});
+</script>

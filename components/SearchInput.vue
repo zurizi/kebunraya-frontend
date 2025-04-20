@@ -1,13 +1,14 @@
 <template>
   <div class="relative">
     <input
-      v-model="searchQuery"
+      :value="modelValue"
+      @input="$emit('update:modelValue', $event.target.value)"
       type="text"
-      placeholder="Cari Tanaman"
+      :placeholder="placeholder"
       class="w-full py-2 pl-12 pr-4 text-sm bg-gray-200 border border-green-900 rounded-lg focus:border-2 border-line focus:outline-none focus:border-green-900"
     />
     <button
-      @click="search()"
+      @click="search()" 
       class="absolute inset-y-0 left-0 flex items-center px-4 text-green-900"
     >
       <svg
@@ -33,15 +34,24 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
   name: "SearchInput",
-  data() {
-    return {
-      searchQuery: "",
-    };
+  props: {
+    placeholder: {
+      type: String,
+      default: "Cari...",
+    },
+
+    modelValue: {
+      type: String,
+      default: "",
+    },
   },
+  emits: ["update:modelValue", "search"], // Memancarkan event update:modelValue dan search
   methods: {
     search() {
-      // Implement your search logic here
-      console.log("Searching for:", this.searchQuery);
+      console.log("Searching for:", this.modelValue);
+      // Memancarkan nilai saat ini melalui event 'search'
+      // Event ini tidak digunakan oleh parent component Anda untuk memicu fetch saat ini
+      this.$emit("search", this.modelValue);
     },
   },
 });
