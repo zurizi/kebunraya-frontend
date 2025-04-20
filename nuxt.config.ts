@@ -42,9 +42,12 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       axios: {
-        baseURL: "http://backend-kebunraya.test/api/",
+        baseURL: "http://back-end-kebunraya.marannu.com/api/",
+        // baseURL: "http://backend-kebunraya.test/api/",
+
       },
-      imgURL : "http://backend-kebunraya.test/"
+      imgURL : "http://back-end-kebunraya.marannu.com"
+      // imgURL : "http://backend-kebunraya.test/"
     },
   },
   devServer: {

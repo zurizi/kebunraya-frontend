@@ -1,56 +1,92 @@
 <template>
-  <div
-    ref="container"
-    class="relative w-full h-[800px] overflow-hidden border rounded-xl bg-gray-100"
-    @mousedown="onMouseDown"
-    @mousemove="onMouseMove"
-    @mouseup="onMouseUp"
-    @mouseleave="onMouseUp"
-    @wheel.prevent="onWheel"
-  >
-    <div class="absolute z-10 flex space-x-2 top-4 right-4">
-      <button
-        @click="zoomIn"
-        class="p-2 bg-white rounded shadow hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-        :disabled="scale >= MAX_SCALE"
-      >
-        +
-      </button>
-      <button
-        @click="zoomOut"
-        class="p-2 bg-white rounded shadow hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-        :disabled="scale <= MIN_SCALE"
-      >
-        -
-      </button>
-      <button
-        @click="resetZoom"
-        class="p-2 bg-white rounded shadow hover:bg-gray-100"
-      >
-        Reset
-      </button>
-    </div>
-
+  <div class="relative w-full">
+    <MapsSiderbar :isOpen="isSidebarOpen" />
     <div
-      class="w-full h-full"
-      :style="{
-        transform: `translate(${dragPosition.x}px, ${dragPosition.y}px) scale(${scale})`,
-        transformOrigin: '0 0',
-      }"
+      v-if="isSidebarOpen"
+      class="fixed inset-0 z-30 bg-black opacity-25"
+      @click="isSidebarOpen = false"
+    ></div>
+
+    <button
+      @click="isSidebarOpen = !isSidebarOpen"
+      class="absolute left-0 z-40 px-3 py-1.5 mb-4 text-black transition-transform duration-300 bg-white  top-4"
+      :class="
+        !isSidebarOpen
+          ? 'ease-in translate-x-0 bg-opacity-50 rounded-r-2xl'
+          : 'bg-opacity-75 ease-out translate-x-64 left-4 rounded-s-2xl'
+      "
     >
-      <img
-        ref="image"
-        src="/pages/maps/map.png"
-        alt="Map"
-        class="pointer-events-none select-none max-w-none"
-        @dragstart.prevent
-      />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="5"
+        stroke="currentColor"
+        class="w-6 transition-transform duration-300"
+        :class="{ 'rotate-180': isSidebarOpen }"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3"
+        />
+      </svg>
+    </button>
+    <div
+      ref="container"
+      class="relative w-full h-[800px] overflow-hidden border rounded-xl bg-gray-100"
+      @mousedown="onMouseDown"
+      @mousemove="onMouseMove"
+      @mouseup="onMouseUp"
+      @mouseleave="onMouseUp"
+      @wheel.prevent="onWheel"
+    >
+      <div class="absolute z-10 flex space-x-2 top-4 right-4">
+        <button
+          @click="zoomIn"
+          class="flex items-center justify-center w-10 h-10 bg-white rounded-full shadow hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="scale >= MAX_SCALE"
+        >
+          +
+        </button>
+        <button
+          @click="zoomOut"
+          class="flex items-center justify-center w-10 h-10 bg-white rounded-full shadow hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="scale <= MIN_SCALE"
+        >
+          -
+        </button>
+        <button
+          @click="resetZoom"
+          class="p-2 text-sm bg-white shadow rounded-xl hover:bg-gray-100"
+        >
+          Reset
+        </button>
+      </div>
+
+      <div
+        class="w-full h-full"
+        :style="{
+          transform: `translate(${dragPosition.x}px, ${dragPosition.y}px) scale(${scale})`,
+          transformOrigin: '0 0',
+        }"
+      >
+        <img
+          ref="image"
+          src="/pages/maps/map.png"
+          alt="Map"
+          class="pointer-events-none select-none max-w-none"
+          @dragstart.prevent
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, nextTick } from "vue";
+
+const isSidebarOpen = ref(false);
 
 const scale = ref(1);
 const dragPosition = reactive({ x: 0, y: 0 });
