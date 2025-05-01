@@ -215,7 +215,7 @@ const navItems = [
       },
     ],
   },
-  { text: "Maps", to: "/dashboard" },
+  { text: "Maps", to: "/maps" },
   { text: "Tentang Kami", to: "/tentang-kami" },
 ];
 </script>

@@ -11,7 +11,7 @@ export default defineNuxtConfig({
     "@nuxt/image",
     "@pinia/nuxt",
   ],
-
+  ssr: false,
   // Konfigurasi PWA
   pwa: {
     registerType: "autoUpdate",

@@ -10,7 +10,9 @@
       {{ monitoringStore.error }}
     </div>
     <div v-else-if="monitoringStore.weeklyDashboardData">
-      <div class="w-full p-5 mb-8 bg-white shadow rounded-3xl">
+      <div
+        class="w-full p-5 mb-8 bg-white border border-gray-100 shadow rounded-3xl"
+      >
         <div class="w-full">
           <Bar :data="chartData" :options="chartOptions" height="450" />
         </div>
@@ -37,20 +39,89 @@
       </div>
 
       <div class="grid grid-cols-3 gap-6">
-        <div class="flex flex-col w-full p-5 bg-white shadow rounded-3xl">
+        <div
+          class="flex flex-col justify-around w-full p-5 bg-white border border-gray-100 shadow rounded-3xl"
+        >
           <div class="font-semibold">Kondisi Udara</div>
-          <div class="w-full">
+          <div class="flex items-center justify-center w-full">
             <Doughnut
               :data="doughnutChartData"
               :options="doughnutChartOptions"
             />
           </div>
         </div>
-        <div class="flex w-full px-12 py-8 bg-white shadow rounded-3xl">
-          Area
+        <div
+          class="flex flex-col w-full overflow-hidden bg-white border border-gray-100 shadow rounded-3xl"
+        >
+          <div class="p-5 font-semibold">Area 1</div>
+          <div
+            class="flex flex-col items-center justify-center w-full h-full p-5 text-black"
+            :class="`bg-${conditionAir?.color}-500`"
+          >
+            <div class="text-[100px]">
+              {{ conditionAir?.emoji }}
+            </div>
+            <div class="mb-2 text-2xl font-semibold">
+              {{ conditionAir?.label }}
+            </div>
+            <p class="mb-2 text-sm text-center">
+              {{ conditionAir?.description }}
+            </p>
+            <div class="flex items-end justify-between w-full">
+              <div class="flex flex-col space-y-0.5 font-semibold text-xs">
+                <span> CO : {{ monitoringStore.latestData?.co }} </span>
+                <span> CO2 : {{ monitoringStore.latestData?.co2 }} </span>
+              </div>
+              <span class="text-xs"
+                >Diambil Terakhir pada
+                {{ monitoringStore.latestData.time }}</span
+              >
+            </div>
+          </div>
         </div>
-        <div class="flex w-full px-12 py-8 bg-white shadow rounded-3xl">
-          <button class="px-4 py-2 text-white bg-green-500 rounded-md">
+        <div
+          class="flex flex-col items-start p-4 space-y-4 text-sm bg-white shadow rounded-3xl"
+        >
+          <div class="flex flex-col items-start w-full space-y-1">
+            <label for="periodSelect" class="text-gray-700">Periode:</label>
+            <select
+              id="periodSelect"
+              v-model="selectedPeriod"
+              class="w-full px-3 py-2 border rounded-md"
+            >
+              <option value="thisMonth">Bulan Ini</option>
+              <option value="lastMonth">Bulan Lalu</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div class="flex justify-between w-full">
+            <div class="flex flex-col items-start space-y-1">
+              <label for="startDateInput" class="text-gray-700">Dari:</label>
+              <input
+                type="date"
+                id="startDateInput"
+                v-model="startDate"
+                :disabled="selectedPeriod !== 'custom'"
+                class="px-3 py-2 border rounded-md disabled:bg-gray-100 disabled:cursor-not-allowed"
+              />
+            </div>
+
+            <div class="flex flex-col items-start space-y-1">
+              <label for="endDateInput" class="text-gray-700">Sampai:</label>
+              <input
+                type="date"
+                id="endDateInput"
+                v-model="endDate"
+                :disabled="selectedPeriod !== 'custom'"
+                class="px-3 py-2 border rounded-md disabled:bg-gray-100 disabled:cursor-not-allowed"
+              />
+            </div>
+          </div>
+
+          <button
+            class="px-4 py-2 text-white bg-green-500 rounded-md whitespace-nowrap"
+            @click="exportExcel"
+          >
             Export Data Excel
           </button>
         </div>
@@ -59,13 +130,16 @@
     <div v-else class="text-center text-gray-600">
       Data monitoring tidak tersedia.
     </div>
-    {{ monitoringStore.weeklyDashboardData }}
   </div>
 </template>
 
 <script setup lang="ts">
 import { useMonitoringStore } from "@/store/monitoring";
 import { onMounted, ref, computed, watch } from "vue";
+import { useRuntimeConfig } from '#app';
+
+const runtimeConfig = useRuntimeConfig();
+
 import {
   Chart as ChartJS,
   Title,
@@ -144,7 +218,9 @@ const chartOptions = {
             unit = "km/h";
           }
 
-          return unit ? `${datasetLabel} : ${formattedVal} ${unit}` : `${formattedVal}`;
+          return unit
+            ? `${datasetLabel} : ${formattedVal} ${unit}`
+            : `${formattedVal}`;
         },
         title: (context: { label: any }[]) => context[0].label,
       },
@@ -258,32 +334,48 @@ const doughnutChartData = computed(() => {
   const weekData =
     monitoringStore.weeklyDashboardData?.[`minggu-${currentWeek.value}`];
 
-  let totalCO = 0;
-  let totalCO2 = 0;
+  let sumCO = 0;
+  let countCO = 0;
+  let sumCO2 = 0;
+  let countCO2 = 0;
 
   if (weekData) {
-    // Sum CO and CO2 across all days in the week
     Object.values(weekData).forEach((dayData) => {
-      totalCO += parseFloat(dayData?.co || 0);
-      totalCO2 += parseFloat(dayData?.co2 || 0);
+      const coValue = parseFloat(dayData?.co);
+
+      if (!isNaN(coValue)) {
+        sumCO += coValue;
+        if (coValue !== 0) {
+          countCO++;
+        }
+      }
+
+      const co2Value = parseFloat(dayData?.co2);
+
+      if (!isNaN(co2Value)) {
+        sumCO2 += co2Value;
+        if (co2Value !== 0) {
+          countCO2++;
+        }
+      }
     });
   }
+  const averageCO = countCO > 0 ? sumCO / countCO : 0;
+  const averageCO2 = countCO2 > 0 ? sumCO2 / countCO2 : 0;
 
-  // Return data structure for Doughnut chart
   return {
     labels: ["CO", "CO2"],
     datasets: [
       {
-        data: [totalCO, totalCO2],
-        backgroundColor: ["#00587A", "#FFD700"], // Use the same colors as the bar chart
-        hoverOffset: 4, // Add a slight hover effect
+        data: [averageCO, averageCO2],
+        backgroundColor: ["#00587A", "#FFD700"],
+        hoverOffset: 4,
       },
     ],
   };
 });
 
 const prevWeek = () => {
-  console.log("prev");
   if (currentWeek.value > 1) {
     currentWeek.value--;
     updateChartData();
@@ -296,56 +388,6 @@ const nextWeek = () => {
     updateChartData();
   }
 };
-function getWeekDateRange(dateString: string): { start: string; end: string } {
-  const dateTimestamp = Date.parse(dateString);
-  if (isNaN(dateTimestamp)) {
-    console.error("getWeekDateRange GAGAL parse input YYYY-MM-DD:", dateString);
-
-    return { start: "Tanggal Tidak Valid", end: "Tanggal Tidak Valid" };
-  }
-  const date = new Date(dateTimestamp);
-
-  const dayOfWeek = date.getDay();
-  const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-
-  const monday = new Date(date);
-  monday.setDate(date.getDate() - daysToMonday);
-
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-
-  const formatOutput = (d: Date): string => {
-    const year = d.getFullYear();
-    const monthIndex = d.getMonth();
-    const day = d.getDate();
-
-    const monthNames = [
-      "Januari",
-      "Februari",
-      "Maret",
-      "April",
-      "Mei",
-      "Juni",
-      "Juli",
-      "Agustus",
-      "September",
-      "Oktober",
-      "November",
-      "Desember",
-    ];
-
-    const monthName = monthNames[monthIndex];
-
-    const formattedDay = day.toString().padStart(2, "0");
-
-    return `${formattedDay} ${monthName} ${year}`;
-  };
-
-  return {
-    start: formatOutput(monday),
-    end: formatOutput(sunday),
-  };
-}
 
 const currentWeekDateRange = computed(() => {
   const todayStringYYYYMMDD = new Date().toISOString().slice(0, 10);
@@ -375,10 +417,133 @@ const currentWeekDateRange = computed(() => {
   };
   const targetMondayStringYYYYMMDD = formatToYYYYMMDD(targetMondayDate);
 
-  return getWeekDateRange(targetMondayStringYYYYMMDD);
+  return monitoringStore.getWeekDateRange(targetMondayStringYYYYMMDD);
+});
+
+const conditionAir = computed(() => {
+  if (monitoringStore.latestData) {
+    return monitoringStore.airQualityConditions.find(
+      (condition) =>
+        condition.label.toLowerCase() ===
+        monitoringStore.getAirQualityStatus(
+          monitoringStore.latestData?.co,
+          monitoringStore.latestData?.co2
+        )
+    );
+  }
+});
+
+const formatToYYYYMMDD = (d: Date): string => {
+  const year = d.getFullYear();
+  const month = (d.getMonth() + 1).toString().padStart(2, "0");
+  const day = d.getDate().toString().padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const selectedPeriod = ref("thisMonth");
+const startDate = ref("");
+const endDate = ref("");
+
+const settingDatesFromPeriod = ref(false);
+
+const getStartAndEndOfMonth = (date: Date): { start: string; end: string } => {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+
+  const startDate = new Date(year, month, 1);
+  const endDate = new Date(year, month + 1, 0);
+
+  return {
+    start: formatToYYYYMMDD(startDate),
+    end: formatToYYYYMMDD(endDate),
+  };
+};
+
+const getStartAndEndOfCurrentMonth = (): { start: string; end: string } => {
+  return getStartAndEndOfMonth(new Date());
+};
+
+const getStartAndEndOfLastMonth = (): { start: string; end: string } => {
+  const today = new Date();
+  const firstDayOfCurrentMonth = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    1
+  );
+  const dateInLastMonth = new Date(firstDayOfCurrentMonth);
+  dateInLastMonth.setDate(firstDayOfCurrentMonth.getDate() - 1);
+
+  return getStartAndEndOfMonth(dateInLastMonth);
+};
+
+watch(selectedPeriod, (newPeriod) => {
+  if (newPeriod !== "custom") {
+    settingDatesFromPeriod.value = true;
+    let dates;
+    if (newPeriod === "thisMonth") {
+      dates = getStartAndEndOfCurrentMonth();
+    } else if (newPeriod === "lastMonth") {
+      dates = getStartAndEndOfLastMonth();
+    }
+
+    startDate.value = dates.start;
+    endDate.value = dates.end;
+
+    setTimeout(() => {
+      settingDatesFromPeriod.value = false;
+    }, 0);
+  }
+});
+
+watch([startDate, endDate], () => {
+  if (!settingDatesFromPeriod.value) {
+    console.log("Manual date change detected, setting period to custom");
+    selectedPeriod.value = "custom";
+  }
+});
+
+const exportExcel = () => {
+  if (
+    !startDate.value ||
+    !endDate.value ||
+    startDate.value === "Invalid Date" ||
+    endDate.value === "Invalid Date"
+  ) {
+    alert("Mohon pilih rentang tanggal terlebih dahulu.");
+    return;
+  }
+
+  if (new Date(startDate.value) > new Date(endDate.value)) {
+    alert("Tanggal Mulai tidak boleh setelah Tanggal Selesai.");
+    return;
+  }
+
+  const startDatetime = `${startDate.value}%2000:00:00`;
+  const endDatetime = `${endDate.value}%2023:59:59`;
+
+
+  const apiUrl = `environment-data/export-excel?start_datetime=${startDatetime}&end_datetime=${endDatetime}`;
+  
+  window.open(runtimeConfig.public.axios.baseURL + apiUrl, "_blank");
+};
+
+onMounted(() => {
+  const initialDates = getStartAndEndOfCurrentMonth();
+  startDate.value = initialDates.start;
+  endDate.value = initialDates.end;
+
+  settingDatesFromPeriod.value = true;
+  startDate.value = initialDates.start;
+  endDate.value = initialDates.end;
+  setTimeout(() => {
+    settingDatesFromPeriod.value = false;
+  }, 0);
+
+  console.log("Initial dates set:", startDate.value, endDate.value);
 });
 
 onMounted(() => {
+  monitoringStore.fetchLatestData();
   if (!monitoringStore.weeklyDashboardData) {
     monitoringStore.fetchWeeklyDashboardData().then(() => updateChartData());
   }

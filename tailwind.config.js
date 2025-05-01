@@ -42,9 +42,9 @@ module.exports = {
   },
   plugins: [],
   safelist: [
-    // {
-    //   pattern: /^(bg|text|border)-(blue|yellow|green)$/,
-    //   variants: ["hover", "focus"],
-    // },
+    {
+      pattern: /^(bg|text|border)-(blue|yellow|green|red)-(500)$/,
+      variants: ["hover", "focus"],
+    },
   ],
 };
