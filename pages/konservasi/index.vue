@@ -1,23 +1,41 @@
+<script setup lang="ts">
+import { usePlantsStore } from '@/store/plants';
+import { useRuntimeConfig } from '#app';
+import { onMounted, ref } from 'vue';
+
+const plantsStore = usePlantsStore();
+const runtimeConfig = useRuntimeConfig();
+
+const searchText = ref('');
+
+const handleSearch = (searchValue: string) => {
+  plantsStore.setSearchText(searchValue);
+};
+
+onMounted(() => {
+  plantsStore.fetchPlants();
+});
+</script>
+
 <template>
   <div
     class="flex flex-col px-4 py-12 mx-auto space-y-4 max-w-7xl sm:px-6 lg:px-8"
   >
-    <SearchInput v-model="searchText" placeholder="Cari Tanaman" />
-    <div v-if="pending">Loading tanaman...</div>
+    <SearchInput
+      v-model="searchText"
+      placeholder="Cari Tanaman"
+      @search="handleSearch"
+    />
 
-    <div v-else-if="error">Terjadi kesalahan saat mengambil data tanaman.</div>
+    <div v-if="plantsStore.pending">Loading tanaman...</div>
+    <div v-else-if="plantsStore.error">Terjadi kesalahan saat mengambil data tanaman.</div>
 
     <div
-      v-else-if="
-        apiResponse &&
-        apiResponse.status === 'success' &&
-        Array.isArray(apiResponse.data.data) &&
-        apiResponse.data.data.length > 0
-      "
+      v-else-if="Array.isArray(plantsStore.plantList) && plantsStore.plantList.length > 0"
       class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
     >
       <nuxt-link
-        v-for="plant in apiResponse.data.data"
+        v-for="plant in plantsStore.plantList"
         :to="`/konservasi/${plant.id}`"
         :key="plant.id"
         class="flex flex-col overflow-hidden shadow rounded-3xl"
@@ -87,113 +105,12 @@
     </div>
 
     <div v-else>Tidak ada data tanaman ditemukan.</div>
+
     <Pagination
-      v-if="
-        apiResponse &&
-        apiResponse.data.data &&
-        apiResponse.data.data.length > 0 &&
-        totalPages > 1
-      "
-      v-model:currentPage="currentPage"
-      :totalPages="totalPages"
-      @page-change="updatePage"
+      v-if="Array.isArray(plantsStore.plantList) && plantsStore.plantList.length > 0 && plantsStore.totalPages > 1"
+      v-model:currentPage="plantsStore.currentPage"
+      :totalPages="plantsStore.totalPages"
+      @page-change="plantsStore.updatePage"
     />
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, watch } from "vue";
-import { useNuxtApp, useAsyncData, useRuntimeConfig } from "#app";
-
-const { $api } = useNuxtApp();
-const runtimeConfig = useRuntimeConfig();
-
-const currentPage = ref(1);
-const totalPages = ref(1);
-
-const searchText = ref("");
-
-const debouncedSearchText = ref("");
-
-let debounceTimer: NodeJS.Timeout | null = null;
-const debounceDelay = 2000; // 2 detik
-
-watch(searchText, (newValue) => {
-  if (debounceTimer) {
-    clearTimeout(debounceTimer);
-  }
-
-  debounceTimer = setTimeout(() => {
-    debouncedSearchText.value = newValue;
-
-    currentPage.value = 1;
-  }, debounceDelay);
-});
-
-const {
-  data: apiResponse,
-  pending,
-  error,
-} = await useAsyncData(
-  `plants-${currentPage.value}-${debouncedSearchText.value}`,
-  async () => {
-    console.log(
-      `Workspaceing plants - Page: ${currentPage.value}, Search: ${debouncedSearchText.value}`
-    );
-    try {
-      const response = await $api.get("/plants", {
-        params: {
-          page: currentPage.value,
-          search: debouncedSearchText.value,
-        },
-      });
-
-      if (
-        response.data &&
-        response.data.status === "success" &&
-        response.data.data &&
-        response.data.data.last_page !== undefined
-      ) {
-        totalPages.value = response.data.data.last_page;
-
-        return response.data;
-      } else if (
-        response.data &&
-        response.data.status === "success" &&
-        Array.isArray(response.data.data) &&
-        response.data.data.last_page !== undefined
-      ) {
-        totalPages.value = response.data.data.last_page;
-
-        return response.data;
-      } else {
-        console.error("Unexpected API response structure:", response.data);
-        totalPages.value = 1;
-
-        return { data: [], status: "error", last_page: 1 };
-      }
-    } catch (err: any) {
-      console.error("Error fetching plants:", err);
-      totalPages.value = 1;
-      if (err.response && err.response.status === 404) {
-        return { data: [], status: "success", last_page: 1 };
-      }
-      throw err;
-    }
-  },
-  {
-    watch: [currentPage, debouncedSearchText],
-  }
-);
-
-const updatePage = (page: number) => {
-  currentPage.value = page;
-};
-
-import { onBeforeUnmount } from "vue";
-onBeforeUnmount(() => {
-  if (debounceTimer) {
-    clearTimeout(debounceTimer);
-  }
-});
-</script>

@@ -53,6 +53,7 @@
             >
               <nuxt-link
                 :to="item.to"
+                v-if="!item.dropdown"
                 class="px-1 pt-2 pb-1 font-semibold"
                 :class="{
                   'text-primary border-b-2 border-black':
@@ -62,6 +63,52 @@
               >
                 {{ item.text }}
               </nuxt-link>
+              <div
+                v-else
+                @mouseenter="showDropdown[index] = true"
+                @mouseleave="showDropdown[index] = false"
+                class="relative px-1 py-1 font-semibold"
+              >
+                <button
+                  class="flex items-center space-x-1.5 focus:outline-none"
+                >
+                  <span>{{ item.text }}</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-4 h-4"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                    />
+                  </svg>
+                </button>
+                <div
+                  v-show="showDropdown[index]"
+                  class="absolute left-0 z-50 pt-2 top-full min-w-max"
+                >
+                  <div
+                    class="flex flex-col space-y-1 overflow-hidden bg-white border shadow-lg rounded-2xl"
+                  >
+                    <div
+                      v-for="(subItem, subIndex) in item.dropdown"
+                      :key="subIndex"
+                    >
+                      <nuxt-link
+                        :to="subItem.link"
+                        class="flex flex-col px-4 py-3 text-sm cursor-pointer hover:bg-gray-100"
+                      >
+                        <span class="text-font1">{{ subItem.name }}</span>
+                      </nuxt-link>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </li>
           </ul>
         </nav>
@@ -81,6 +128,7 @@
         >
           <nuxt-link
             :to="item.to"
+            v-if="!item.dropdown"
             class="hover:translate-x-2"
             :class="{
               'text-primary font-semibold': route.path === item.to,
@@ -89,6 +137,44 @@
           >
             {{ item.text }}
           </nuxt-link>
+          <div
+            class="flex items-center space-x-2"
+            v-else
+            @click="toggleProduct = !toggleProduct"
+          >
+            <span>{{ item.text }}</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-4 h-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="m19.5 8.25-7.5 7.5-7.5-7.5"
+              />
+            </svg>
+          </div>
+          <div
+            v-if="item.dropdown && toggleProduct"
+            class="grid w-full grid-cols-1 gap-4 mt-5 overflow-hidden bg-white"
+          >
+            <div v-for="(subItem, subIndex) in item.dropdown" :key="subIndex">
+              <nuxt-link
+                :to="subItem.link"
+                class="flex flex-col px-6 py-4 space-y-2 text-sm border rounded-xl border-line-border"
+              >
+                <div class="flex items-center space-x-2">
+                  <div class="flex flex-col space-y-0">
+                    <span class="bold-1">{{ subItem.name }}</span>
+                  </div>
+                </div>
+              </nuxt-link>
+            </div>
+          </div>
         </li>
       </ul>
     </nav>
@@ -115,8 +201,21 @@ const navItems = [
   { text: "Home", to: "/" },
   { text: "Monitoring", to: "/monitoring" },
   { text: "Konservasi", to: "/konservasi" },
-  { text: "Kegiatan", to: "/kegiatan" },
-  { text: "Maps", to: "/maps" },
+  {
+    text: "Kegiatan",
+    to: "#",
+    dropdown: [
+      {
+        name: "Study Tour",
+        link: "/study-tour",
+      },
+      {
+        name: "Acara",
+        link: "/kegiatan",
+      },
+    ],
+  },
+  { text: "Maps", to: "/dashboard" },
   { text: "Tentang Kami", to: "/tentang-kami" },
 ];
 </script>

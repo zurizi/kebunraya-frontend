@@ -6,9 +6,10 @@
       type="text"
       :placeholder="placeholder"
       class="w-full py-2 pl-12 pr-4 text-sm bg-gray-200 border border-green-900 rounded-lg focus:border-2 border-line focus:outline-none focus:border-green-900"
+      @keypress.enter="search()"
     />
     <button
-      @click="search()" 
+      @click="search()"
       class="absolute inset-y-0 left-0 flex items-center px-4 text-green-900"
     >
       <svg
@@ -39,18 +40,15 @@ export default defineComponent({
       type: String,
       default: "Cari...",
     },
-
     modelValue: {
       type: String,
       default: "",
     },
   },
-  emits: ["update:modelValue", "search"], // Memancarkan event update:modelValue dan search
+  emits: ["update:modelValue", "search"],
   methods: {
     search() {
       console.log("Searching for:", this.modelValue);
-      // Memancarkan nilai saat ini melalui event 'search'
-      // Event ini tidak digunakan oleh parent component Anda untuk memicu fetch saat ini
       this.$emit("search", this.modelValue);
     },
   },

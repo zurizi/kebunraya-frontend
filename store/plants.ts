@@ -1,0 +1,131 @@
+// stores/plants.ts
+import { defineStore } from 'pinia';
+import { useNuxtApp, useRuntimeConfig } from '#app';
+import { ref } from 'vue';
+
+export const usePlantsStore = defineStore('plants', () => {
+  const { $api } = useNuxtApp();
+  const runtimeConfig = useRuntimeConfig();
+
+  // State untuk daftar tanaman
+  const plantList = ref<any[]>([]);
+  const plantsListPending = ref(false);
+  const plantsListError = ref(null);
+  const currentPage = ref(1);
+  const totalPages = ref(1);
+  const searchText = ref('');
+
+  // State untuk detail tanaman
+  const plantDetail = ref<any | null>(null);
+  const plantDetailPending = ref(false);
+  const plantDetailError = ref(null);
+
+  async function fetchPlants() {
+    plantsListPending.value = true;
+    plantsListError.value = null;
+    try {
+      const response = await $api.get('/plants', {
+        params: {
+          page: currentPage.value,
+          search: searchText.value,
+        },
+      });
+
+      if (response.data && response.data.status === 'success' && response.data.data) {
+        if (Array.isArray(response.data.data.data) && response.data.data.last_page !== undefined) {
+          plantList.value = response.data.data.data;
+          totalPages.value = response.data.data.last_page;
+        } else if (Array.isArray(response.data.data) && response.data.last_page !== undefined) {
+          plantList.value = response.data.data;
+          totalPages.value = response.data.last_page;
+        } else {
+          console.error('[Plants Store] Struktur respons API daftar tanaman tidak sesuai:', response.data.data);
+          plantList.value = [];
+          totalPages.value = 1;
+        }
+      } else {
+        console.error('[Plants Store] Struktur respons API daftar tanaman tidak sesuai atau status bukan sukses:', response.data);
+        plantList.value = [];
+        totalPages.value = 1;
+      }
+    } catch (err: any) {
+      console.error('[Plants Store] Gagal mengambil data daftar tanaman:', err);
+      plantsListError.value = err;
+      plantList.value = [];
+      totalPages.value = 1;
+      if (err.response && err.response.status === 404) {
+        console.log('[Plants Store] 404: Tidak ada tanaman ditemukan untuk kueri saat ini.');
+        plantList.value = [];
+        totalPages.value = 1;
+        plantsListError.value = null; // Reset error untuk kasus tidak ada data
+      }
+    } finally {
+      plantsListPending.value = false;
+    }
+  }
+
+  async function fetchPlantDetail(id: string) {
+    plantDetailPending.value = true;
+    plantDetailError.value = null;
+    plantDetail.value = null; // Reset detail sebelum fetching baru
+    try {
+      const response = await $api.get(`/plants/${id}`);
+      if (response.data && response.data.status === 'success' && response.data.data) {
+        plantDetail.value = response.data.data;
+      } else {
+        console.error('[Plants Store] Struktur respons API detail tanaman tidak sesuai:', response.data);
+        plantDetail.value = null;
+      }
+    } catch (err: any) {
+      console.error(`[Plants Store] Gagal mengambil detail tanaman dengan ID ${id}:`, err);
+      plantDetailError.value = err;
+      plantDetail.value = null;
+      if (err.response && err.response.status === 404) {
+        console.log(`[Plants Store] 404: Detail tanaman dengan ID ${id} tidak ditemukan.`);
+      }
+    } finally {
+      plantDetailPending.value = false;
+    }
+  }
+
+  function updatePage(page: number) {
+    if (page >= 1 && page <= totalPages.value) {
+      currentPage.value = page;
+      fetchPlants();
+    } else {
+      console.warn(`[Plants Store] Mencoba mengatur halaman di luar batas: ${page}`);
+    }
+  }
+
+  function setSearchText(text: string) {
+    searchText.value = text;
+    currentPage.value = 1; // Reset ke halaman pertama saat mencari
+    fetchPlants();
+  }
+
+  function resetPlantDetail() {
+    plantDetail.value = null;
+    plantDetailError.value = null;
+    plantDetailPending.value = false;
+  }
+
+  return {
+    // State untuk daftar tanaman
+    plantList,
+    plantsListPending,
+    plantsListError,
+    currentPage,
+    totalPages,
+    searchText,
+    fetchPlants,
+    updatePage,
+    setSearchText,
+
+    // State untuk detail tanaman
+    plantDetail,
+    plantDetailPending,
+    plantDetailError,
+    fetchPlantDetail,
+    resetPlantDetail,
+  };
+});

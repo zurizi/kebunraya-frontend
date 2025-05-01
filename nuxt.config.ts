@@ -5,7 +5,12 @@ import mkcert from "vite-plugin-mkcert";
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  modules: ["@nuxtjs/tailwindcss", "@vite-pwa/nuxt", "@nuxt/image"],
+  modules: [
+    "@nuxtjs/tailwindcss",
+    "@vite-pwa/nuxt",
+    "@nuxt/image",
+    "@pinia/nuxt",
+  ],
 
   // Konfigurasi PWA
   pwa: {
@@ -42,16 +47,17 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       axios: {
-        baseURL: "http://back-end-kebunraya.marannu.com/api/",
+        baseURL: "https://backend.kebunrayabundahayati.com/api/",
+        // baseURL: "https://back-end-kebunraya.marannu.com/api/",
         // baseURL: "http://backend-kebunraya.test/api/",
-
       },
-      imgURL : "http://back-end-kebunraya.marannu.com"
+      imgURL: "https://backend.kebunrayabundahayati.com/storage",
+      // imgURL : "https://back-end-kebunraya.marannu.com"
       // imgURL : "http://backend-kebunraya.test/"
     },
   },
   devServer: {
-    port: 2000 // Ganti 8000 dengan port yang Anda inginkan
+    port: 2000, // Ganti 8000 dengan port yang Anda inginkan
   },
   // Konfigurasi app
   app: {
@@ -75,13 +81,13 @@ export default defineNuxtConfig({
       meta: [
         {
           name: "description",
-          content: "Selamat datang di Kebun Raya Bulungan, tempat di mana flora endemik, budaya lokal, dan konservasi alam bertemu untuk menciptakan masa depan yang berkelanjutan.",
+          content:
+            "Selamat datang di Kebun Raya Bulungan, tempat di mana flora endemik, budaya lokal, dan konservasi alam bertemu untuk menciptakan masa depan yang berkelanjutan.",
         },
       ],
     },
   },
   css: ["~/assets/css/global.css"],
-
 
   compatibilityDate: "2025-04-10",
 });
