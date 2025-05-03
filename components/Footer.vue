@@ -3,7 +3,7 @@
     <div
       class="flex flex-col w-full px-8 pt-8 pb-6 mx-auto md:px-18 md:container lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
     >
-      <div class="grid grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div class="flex flex-col space-y-4">
           <div class="text-lg font-semibold">KONTAK KAMI</div>
           <div class="flex space-x-2 text-sm">
@@ -62,7 +62,7 @@
         <nuxt-link to="/" class="flex items-center justify-center">
           <Image src="/logo.png" alt="" class="w-48 3xl:w-52" />
         </nuxt-link>
-        <div class="flex w-full text-lg font-semibold">Official Partner</div>
+        <div class="hidden w-full text-lg font-semibold lg:flex">Official Partner</div>
       </div>
 
       <div class="flex items-center justify-between pt-6 border-t">

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col px-4 pt-12 mx-auto space-y-6 max-w-7xl sm:px-6 lg:px-8"
+    class="flex flex-col px-4 pt-8 pb-12 mx-auto space-y-6 sm:pt-12 max-w-7xl sm:px-6 lg:px-8"
   >
     <div v-if="monitoringStore.pending" class="text-center">
       Memuat data monitoring...
@@ -16,29 +16,29 @@
         <div class="w-full">
           <Bar :data="chartData" :options="chartOptions" height="450" />
         </div>
-        <div class="flex items-center justify-between w-full mt-5">
+        <div class="flex items-center justify-between w-full mt-5 space-x-2">
           <button
             @click="prevWeek"
             :disabled="currentWeek === 1"
-            class="px-4 py-2 text-sm text-white bg-green-600 rounded-md disabled:bg-gray-200"
+            class="px-1 py-2 text-xs text-white bg-green-600 rounded-md md:px-4 md:text-sm disabled:bg-gray-200"
           >
             Minggu Sebelumnya
           </button>
-          <div class="text-lg font-semibold">
+          <div class="text-xs font-semibold md:text-lg">
             Periode {{ currentWeekDateRange.start }} -
             {{ currentWeekDateRange.end }}
           </div>
           <button
             @click="nextWeek"
             :disabled="currentWeek === totalWeeks"
-            class="px-4 py-2 text-sm text-white bg-green-800 rounded-md disabled:bg-gray-200"
+            class="px-1 py-2 text-xs text-white bg-green-800 rounded-md md:px-4 md:text-sm disabled:bg-gray-200"
           >
             Minggu Berikutnya
           </button>
         </div>
       </div>
 
-      <div class="grid grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
         <div
           class="flex flex-col justify-around w-full p-5 bg-white border border-gray-100 shadow rounded-3xl"
         >
@@ -82,6 +82,8 @@
         <div
           class="flex flex-col items-start p-4 space-y-4 text-sm bg-white shadow rounded-3xl"
         >
+          <div class="font-semibold ">Export data</div>
+
           <div class="flex flex-col items-start w-full space-y-1">
             <label for="periodSelect" class="text-gray-700">Periode:</label>
             <select
@@ -119,7 +121,7 @@
           </div>
 
           <button
-            class="px-4 py-2 text-white bg-green-500 rounded-md whitespace-nowrap"
+            class="px-4 py-2 text-sm text-white bg-green-500 rounded-md whitespace-nowrap"
             @click="exportExcel"
           >
             Export Data Excel
@@ -136,7 +138,7 @@
 <script setup lang="ts">
 import { useMonitoringStore } from "@/store/monitoring";
 import { onMounted, ref, computed, watch } from "vue";
-import { useRuntimeConfig } from '#app';
+import { useRuntimeConfig } from "#app";
 
 const runtimeConfig = useRuntimeConfig();
 
@@ -521,9 +523,8 @@ const exportExcel = () => {
   const startDatetime = `${startDate.value}%2000:00:00`;
   const endDatetime = `${endDate.value}%2023:59:59`;
 
-
   const apiUrl = `environment-data/export-excel?start_datetime=${startDatetime}&end_datetime=${endDatetime}`;
-  
+
   window.open(runtimeConfig.public.axios.baseURL + apiUrl, "_blank");
 };
 

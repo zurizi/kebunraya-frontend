@@ -1,5 +1,5 @@
 <template>
-  <div id="home" class="space-y-20">
+  <div id="home" class="pb-12 space-y-20">
     <HomePageHeroSection />
     <HomePageDataLingkunganSection />
     <HomePageKomitmenKamiSection />

@@ -1,7 +1,7 @@
 <template>
   <section id="komitmen-kami">
     <div
-      class="flex flex-col w-full px-16 space-y-4 md:px-18 md:container lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
+      class="flex flex-col w-full px-8 space-y-4 sm:px-14 md:px-18 md:container lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
     >
       <div class="text-xl font-semibold">Komitmen Kami Untuk Alam</div>
       <p>Menjaga dan melestarikan keanekaragaman hayati Kalimantan Utara.</p>
@@ -21,7 +21,7 @@
             Array.isArray(plantsStore.plantList) &&
             plantsStore.plantList.length > 0
           "
-          class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
+          class="grid w-full grid-cols-1 gap-8 lg:grid-cols-3"
         >
           <nuxt-link
             v-for="plant in plantsStore.plantList.slice(0, 3)"

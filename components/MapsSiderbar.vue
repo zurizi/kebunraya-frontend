@@ -4,7 +4,7 @@
         'translate-x-0 ease-out': isOpen,
         '-translate-x-full ease-in': !isOpen,
       }"
-      class="fixed left-0 z-40 h-screen p-4 overflow-y-auto transition-transform duration-300 bg-white bg-opacity-50 shadow-lg top-28 w-80"
+      class="fixed left-0 z-40 h-screen p-4 overflow-y-auto transition-transform duration-300 bg-white bg-opacity-50 shadow-lg top-24 3xl:top-28 w-80"
     >
       <nav class="pb-24">
         <ul>

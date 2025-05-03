@@ -1,9 +1,9 @@
 <template>
-  <header id="header-nav">
+  <header id="header-nav" class="relative">
     <div
-      class="fixed z-50 flex items-center justify-between w-full px-8 py-2 mx-auto bg-white border-b md:px-18 md:container lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
+      class="fixed z-[9999] flex items-center justify-between w-full px-8 py-2 mx-auto bg-white border-b md:px-18 md:container lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
     >
-      <div class="flex items-center justify-between w-full">
+      <div class="relative flex items-center justify-between w-full">
         <div class="flex md:hidden">
           <button @click="toggleNav = !toggleNav">
             <svg
@@ -43,7 +43,6 @@
             <Image src="/logo.png" alt="" class="w-20 3xl:w-24" />
           </nuxt-link>
         </div>
-        <!-- Desktop navigation -->
         <nav class="hidden md:flex">
           <ul class="flex items-center md:space-x-3 lg:space-x-5 xl:space-x-6">
             <li
@@ -115,69 +114,76 @@
       </div>
     </div>
 
-    <nav
+    <div
       v-if="toggleNav"
-      class="absolute inset-x-0 z-50 flex flex-col w-full bg-white shadow-lg md:hidden"
+      class="fixed z-[9998] w-full h-full pt-24 bg-black md:hidden bg-opacity-40"
+      @click="toggleNav = false"
     >
-      <ul class="flex flex-col items-start w-full p-4 mt-2 mb-8 space-y-4">
-        <li
-          v-for="(item, index) in navItems"
-          :key="index"
-          class="w-full pb-4 border-b border-line-border"
-          @click="toggleNav = false"
-        >
-          <nuxt-link
-            :to="item.to"
-            v-if="!item.dropdown"
-            class="hover:translate-x-2"
-            :class="{
-              'text-primary font-semibold': route.path === item.to,
-              'text-font1': route.path !== item.to,
-            }"
+      <nav
+        class="inset-x-0 z-[9999] flex flex-col w-full bg-white shadow-lg"
+        @click.stop
+      >
+        <ul class="flex flex-col items-start w-full p-4 mt-2 mb-8 space-y-4">
+          <li
+            v-for="(item, index) in navItems"
+            :key="index"
+            class="w-full pb-4 border-b border-line-border"
           >
-            {{ item.text }}
-          </nuxt-link>
-          <div
-            class="flex items-center space-x-2"
-            v-else
-            @click="toggleProduct = !toggleProduct"
-          >
-            <span>{{ item.text }}</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              class="w-4 h-4"
+            <nuxt-link
+              :to="item.to"
+              v-if="!item.dropdown"
+              @click="toggleNav = false"
+              class="hover:translate-x-2"
+              :class="{
+                'text-primary font-semibold': route.path === item.to,
+                'text-font1': route.path !== item.to,
+              }"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="m19.5 8.25-7.5 7.5-7.5-7.5"
-              />
-            </svg>
-          </div>
-          <div
-            v-if="item.dropdown && toggleProduct"
-            class="grid w-full grid-cols-1 gap-4 mt-5 overflow-hidden bg-white"
-          >
-            <div v-for="(subItem, subIndex) in item.dropdown" :key="subIndex">
-              <nuxt-link
-                :to="subItem.link"
-                class="flex flex-col px-6 py-4 space-y-2 text-sm border rounded-xl border-line-border"
+              {{ item.text }}
+            </nuxt-link>
+            <div
+              class="flex items-center space-x-2"
+              v-else
+              @click="toggleProduct = !toggleProduct"
+            >
+              <span>{{ item.text }}</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-4 h-4"
               >
-                <div class="flex items-center space-x-2">
-                  <div class="flex flex-col space-y-0">
-                    <span class="bold-1">{{ subItem.name }}</span>
-                  </div>
-                </div>
-              </nuxt-link>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                />
+              </svg>
             </div>
-          </div>
-        </li>
-      </ul>
-    </nav>
+            <div
+              v-if="item.dropdown && toggleProduct"
+              class="grid w-full grid-cols-1 gap-4 mt-5 overflow-hidden bg-white"
+            >
+              <div v-for="(subItem, subIndex) in item.dropdown" :key="subIndex">
+                <nuxt-link
+                  :to="subItem.link"
+                  @click="toggleNav = false"
+                  class="flex flex-col px-6 py-4 space-y-2 text-sm border rounded-xl border-line-border"
+                >
+                  <div class="flex items-center space-x-2">
+                    <div class="flex flex-col space-y-0">
+                      <span class="bold-1">{{ subItem.name }}</span>
+                    </div>
+                  </div>
+                </nuxt-link>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </div>
   </header>
 </template>
 

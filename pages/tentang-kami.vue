@@ -8,9 +8,13 @@
     <div
       class="relative z-20 w-full px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8"
     >
-      <div class="flex flex-col items-center w-full space-y-20">
-        <div class="w-full px-12 py-8 bg-white shadow rounded-3xl">
-          <div class="flex space-x-4">
+      <div class="flex flex-col items-center w-full space-y-8 md:space-y-20">
+        <div
+          class="flex flex-col w-full px-8 py-8 bg-white shadow md:px-12 md:flex-row rounded-3xl"
+        >
+          <div
+            class="flex flex-col space-x-0 space-y-2 md:space-y-0 md:space-x-4 md:flex-row"
+          >
             <div class="flex w-full sm:w-1/2">
               <Image
                 src="/pages/tentang-kami/gerbang utama.png"
@@ -39,7 +43,7 @@
             ekonomi.
           </p>
         </div>
-        <div class="w-full px-12 py-8 bg-white shadow rounded-3xl">
+        <div class="w-full px-8 py-8 bg-white shadow md:px-12 rounded-3xl">
           <div class="flex space-x-4">
             <div class="flex flex-col w-full space-y-4">
               <h1 class="text-3xl font-bold text-gray-900">
@@ -83,49 +87,47 @@
             </div>
           </div>
         </div>
-        <div class="w-full px-12 py-8 bg-white shadow rounded-3xl">
-          <div class="flex space-x-4">
-            <div class="flex flex-col w-full space-y-4">
-              <h1 class="text-3xl font-bold text-gray-900">
-                Ikon Kebun Raya Bundahayati
-              </h1>
-              <div class="flex space-x-4">
-                <div class="flex flex-col w-10/12 text-xl">
-                  <p class="text-justify">
-                    Pada sebuah kebun raya, lazim disematkan suatu ikon atau
-                    maskot yang menjadi identitas kebun raya tersebut dengan
-                    tujuan untuk mempermudah pengenalan terhadap masyarakat luas
-                    dan memperkuat citra/image. Ikon terpilih untuk Kebun Raya
-                    Bundayati, Kabupaten Bulungan adalah Bauhinia semibifida
-                    Roxb. Tumbuhan ini mempunyai nama lokal Lepiu, Lepeu, Lepau,
-                    Rapiu atau Kapiu. Jenis ini berasal dari suku
-                    polong-polongan (Fabaceae) dengan perawakan berupa tumbuhan
-                    merambat. Daunnya seperti sayap kupu-kupu, bunga berwarna
-                    putih, kuning atau hijau dengan buah berbentuk polong dengan
-                    panjang 10-20 cm dan lebar 3-4 cm. Dalam satu polong
-                    terdapat kurang lebih 6 biji yang menyerupai biji jengkol.
-                  </p>
-                  <p class="text-justify">
-                    Tumbuhan ini mempunyai persebaran di Malaysia dan Indonesia
-                    bagian barat di dataran rendah hingga hingga ketinggian 2000
-                    m dpl. Bijinya dapat dimakan dan dijual dengan harga cukup
-                    tinggi, daun mudanya dimanfaatkan sebagai sayur, akarnya
-                    sebagai obat dan batangnya dapat digunakan sebagai tali
-                  </p>
-                </div>
+        <div class="w-full px-8 py-8 bg-white shadow md:px-12 rounded-3xl">
+          <div class="flex flex-col w-full space-y-4">
+            <h1 class="text-3xl font-bold text-gray-900">
+              Ikon Kebun Raya Bundahayati
+            </h1>
+            <div class="flex flex-col-reverse md:space-x-4 md:flex-row">
+              <div class="flex flex-col w-full text-xl md:w-10/12">
+                <p class="text-justify">
+                  Pada sebuah kebun raya, lazim disematkan suatu ikon atau
+                  maskot yang menjadi identitas kebun raya tersebut dengan
+                  tujuan untuk mempermudah pengenalan terhadap masyarakat luas
+                  dan memperkuat citra/image. Ikon terpilih untuk Kebun Raya
+                  Bundayati, Kabupaten Bulungan adalah Bauhinia semibifida Roxb.
+                  Tumbuhan ini mempunyai nama lokal Lepiu, Lepeu, Lepau, Rapiu
+                  atau Kapiu. Jenis ini berasal dari suku polong-polongan
+                  (Fabaceae) dengan perawakan berupa tumbuhan merambat. Daunnya
+                  seperti sayap kupu-kupu, bunga berwarna putih, kuning atau
+                  hijau dengan buah berbentuk polong dengan panjang 10-20 cm dan
+                  lebar 3-4 cm. Dalam satu polong terdapat kurang lebih 6 biji
+                  yang menyerupai biji jengkol.
+                </p>
+                <p class="text-justify">
+                  Tumbuhan ini mempunyai persebaran di Malaysia dan Indonesia
+                  bagian barat di dataran rendah hingga hingga ketinggian 2000 m
+                  dpl. Bijinya dapat dimakan dan dijual dengan harga cukup
+                  tinggi, daun mudanya dimanfaatkan sebagai sayur, akarnya
+                  sebagai obat dan batangnya dapat digunakan sebagai tali
+                </p>
+              </div>
 
-                <div class="flex flex-col w-2/12 space-y-4">
-                  <Image
-                    src="/pages/tentang-kami/daun lepiu 1.png"
-                    alt=""
-                    class="object-cover w-full"
-                  />
-                  <Image
-                    src="/pages/tentang-kami/Lepiu 1.png"
-                    alt=""
-                    class="object-cover w-full"
-                  />
-                </div>
+              <div class="grid w-full grid-cols-2 gap-5 mb-2 md:mb-0 md:space-y-4 md:grid-cols-1 lg:w-2/12">
+                <Image
+                  src="/pages/tentang-kami/daun lepiu 1.png"
+                  alt=""
+                  class="object-cover h-full rounded-2xl"
+                />
+                <Image
+                  src="/pages/tentang-kami/Lepiu 1.png"
+                  alt=""
+                  class="object-cover h-full rounded-2xl"
+                />
               </div>
             </div>
           </div>
