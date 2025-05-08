@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { usePlantsStore } from '@/store/plants';
-import { useRuntimeConfig } from '#app';
-import { onMounted, ref } from 'vue';
+import { usePlantsStore } from "@/store/plants";
+import { useRuntimeConfig } from "#app";
+import { onMounted, ref } from "vue";
+import { onBeforeRouteLeave } from "vue-router";
 
 const plantsStore = usePlantsStore();
 const runtimeConfig = useRuntimeConfig();
 
-const searchText = ref('');
+const searchText = ref("");
 
 const handleSearch = (searchValue: string) => {
   plantsStore.setSearchText(searchValue);
@@ -14,6 +15,11 @@ const handleSearch = (searchValue: string) => {
 
 onMounted(() => {
   plantsStore.fetchPlants();
+});
+
+onBeforeRouteLeave((to, from, next) => {
+  plantsStore.resetCategory();
+  next();
 });
 </script>
 
@@ -28,10 +34,14 @@ onMounted(() => {
     />
 
     <div v-if="plantsStore.pending">Loading tanaman...</div>
-    <div v-else-if="plantsStore.error">Terjadi kesalahan saat mengambil data tanaman.</div>
+    <div v-else-if="plantsStore.error">
+      Terjadi kesalahan saat mengambil data tanaman.
+    </div>
 
     <div
-      v-else-if="Array.isArray(plantsStore.plantList) && plantsStore.plantList.length > 0"
+      v-else-if="
+        Array.isArray(plantsStore.plantList) && plantsStore.plantList.length > 0
+      "
       class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
     >
       <nuxt-link
@@ -107,7 +117,11 @@ onMounted(() => {
     <div v-else>Tidak ada data tanaman ditemukan.</div>
 
     <Pagination
-      v-if="Array.isArray(plantsStore.plantList) && plantsStore.plantList.length > 0 && plantsStore.totalPages > 1"
+      v-if="
+        Array.isArray(plantsStore.plantList) &&
+        plantsStore.plantList.length > 0 &&
+        plantsStore.totalPages > 1
+      "
       v-model:currentPage="plantsStore.currentPage"
       :totalPages="plantsStore.totalPages"
       @page-change="plantsStore.updatePage"

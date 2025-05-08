@@ -206,7 +206,45 @@ const showDropdown = ref<Record<number, boolean>>({});
 const navItems = [
   { text: "Home", to: "/" },
   { text: "Monitoring", to: "/monitoring" },
-  { text: "Konservasi", to: "/konservasi" },
+  {
+    text: "Konservasi",
+    to: "#",
+    dropdown: [
+      {
+        name: "Konservasi",
+        link: "/konservasi",
+      },
+
+      {
+        name: "Tumbuhan Obat Kalimantan",
+        link: "/konservasi/kategori/tumbuhan-obat-kalimantan", 
+      },
+      {
+        name: "Tumbuhan Etnobotani Kalimantan",
+        link: "/konservasi/kategori/tumbuhan-etnobotani-kalimantan", 
+      },
+      {
+        name: "Tumbuhan Buah Kalimantan",
+        link: "/konservasi/kategori/tumbuhan-buah-kalimantan", 
+      },
+      {
+        name: "Tumbuhan Kayu",
+        link: "/konservasi/kategori/tumbuhan-kayu", 
+      },
+      {
+        name: "Tumbuhan Hias",
+        link: "/konservasi/kategori/tumbuhan-hias", 
+      },
+      {
+        name: "Tumbuhan Air",
+        link: "/konservasi/kategori/tumbuhan-air", 
+      },
+      {
+        name: "Tumbuhan Anggrek Kalimantan",
+        link: "/konservasi/kategori/tumbuhan-anggrek-kalimantan", 
+      },
+    ],
+  },
   {
     text: "Kegiatan",
     to: "#",

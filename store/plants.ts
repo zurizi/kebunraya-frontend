@@ -1,9 +1,9 @@
 // stores/plants.ts
-import { defineStore } from 'pinia';
-import { useNuxtApp, useRuntimeConfig } from '#app';
-import { ref } from 'vue';
+import { defineStore } from "pinia";
+import { useNuxtApp, useRuntimeConfig } from "#app";
+import { ref } from "vue";
 
-export const usePlantsStore = defineStore('plants', () => {
+export const usePlantsStore = defineStore("plants", () => {
   const { $api } = useNuxtApp();
   const runtimeConfig = useRuntimeConfig();
 
@@ -13,7 +13,8 @@ export const usePlantsStore = defineStore('plants', () => {
   const plantsListError = ref(null);
   const currentPage = ref(1);
   const totalPages = ref(1);
-  const searchText = ref('');
+  const searchText = ref("");
+  const categoryId = ref("");
 
   // State untuk detail tanaman
   const plantDetail = ref<any | null>(null);
@@ -24,37 +25,56 @@ export const usePlantsStore = defineStore('plants', () => {
     plantsListPending.value = true;
     plantsListError.value = null;
     try {
-      const response = await $api.get('/plants', {
+      const response = await $api.get("/plants", {
         params: {
           page: currentPage.value,
           search: searchText.value,
+          category_id: categoryId.value,
         },
       });
 
-      if (response.data && response.data.status === 'success' && response.data.data) {
-        if (Array.isArray(response.data.data.data) && response.data.data.last_page !== undefined) {
+      if (
+        response.data &&
+        response.data.status === "success" &&
+        response.data.data
+      ) {
+        if (
+          Array.isArray(response.data.data.data) &&
+          response.data.data.last_page !== undefined
+        ) {
           plantList.value = response.data.data.data;
           totalPages.value = response.data.data.last_page;
-        } else if (Array.isArray(response.data.data) && response.data.last_page !== undefined) {
+        } else if (
+          Array.isArray(response.data.data) &&
+          response.data.last_page !== undefined
+        ) {
           plantList.value = response.data.data;
           totalPages.value = response.data.last_page;
         } else {
-          console.error('[Plants Store] Struktur respons API daftar tanaman tidak sesuai:', response.data.data);
+          console.error(
+            "[Plants Store] Struktur respons API daftar tanaman tidak sesuai:",
+            response.data.data
+          );
           plantList.value = [];
           totalPages.value = 1;
         }
       } else {
-        console.error('[Plants Store] Struktur respons API daftar tanaman tidak sesuai atau status bukan sukses:', response.data);
+        console.error(
+          "[Plants Store] Struktur respons API daftar tanaman tidak sesuai atau status bukan sukses:",
+          response.data
+        );
         plantList.value = [];
         totalPages.value = 1;
       }
     } catch (err: any) {
-      console.error('[Plants Store] Gagal mengambil data daftar tanaman:', err);
+      console.error("[Plants Store] Gagal mengambil data daftar tanaman:", err);
       plantsListError.value = err;
       plantList.value = [];
       totalPages.value = 1;
       if (err.response && err.response.status === 404) {
-        console.log('[Plants Store] 404: Tidak ada tanaman ditemukan untuk kueri saat ini.');
+        console.log(
+          "[Plants Store] 404: Tidak ada tanaman ditemukan untuk kueri saat ini."
+        );
         plantList.value = [];
         totalPages.value = 1;
         plantsListError.value = null; // Reset error untuk kasus tidak ada data
@@ -70,18 +90,30 @@ export const usePlantsStore = defineStore('plants', () => {
     plantDetail.value = null; // Reset detail sebelum fetching baru
     try {
       const response = await $api.get(`/plants/${id}`);
-      if (response.data && response.data.status === 'success' && response.data.data) {
+      if (
+        response.data &&
+        response.data.status === "success" &&
+        response.data.data
+      ) {
         plantDetail.value = response.data.data;
       } else {
-        console.error('[Plants Store] Struktur respons API detail tanaman tidak sesuai:', response.data);
+        console.error(
+          "[Plants Store] Struktur respons API detail tanaman tidak sesuai:",
+          response.data
+        );
         plantDetail.value = null;
       }
     } catch (err: any) {
-      console.error(`[Plants Store] Gagal mengambil detail tanaman dengan ID ${id}:`, err);
+      console.error(
+        `[Plants Store] Gagal mengambil detail tanaman dengan ID ${id}:`,
+        err
+      );
       plantDetailError.value = err;
       plantDetail.value = null;
       if (err.response && err.response.status === 404) {
-        console.log(`[Plants Store] 404: Detail tanaman dengan ID ${id} tidak ditemukan.`);
+        console.log(
+          `[Plants Store] 404: Detail tanaman dengan ID ${id} tidak ditemukan.`
+        );
       }
     } finally {
       plantDetailPending.value = false;
@@ -93,13 +125,15 @@ export const usePlantsStore = defineStore('plants', () => {
       currentPage.value = page;
       fetchPlants();
     } else {
-      console.warn(`[Plants Store] Mencoba mengatur halaman di luar batas: ${page}`);
+      console.warn(
+        `[Plants Store] Mencoba mengatur halaman di luar batas: ${page}`
+      );
     }
   }
 
   function setSearchText(text: string) {
     searchText.value = text;
-    currentPage.value = 1; // Reset ke halaman pertama saat mencari
+    currentPage.value = 1;
     fetchPlants();
   }
 
@@ -107,6 +141,12 @@ export const usePlantsStore = defineStore('plants', () => {
     plantDetail.value = null;
     plantDetailError.value = null;
     plantDetailPending.value = false;
+  }
+
+  function resetCategory() {
+    categoryId.value = "";
+    currentPage.value = 1;
+    totalPages.value = 1;
   }
 
   return {
@@ -127,5 +167,9 @@ export const usePlantsStore = defineStore('plants', () => {
     plantDetailError,
     fetchPlantDetail,
     resetPlantDetail,
+
+    // category
+    categoryId,
+    resetCategory,
   };
 });

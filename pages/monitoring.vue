@@ -82,7 +82,7 @@
         <div
           class="flex flex-col items-start p-4 space-y-4 text-sm bg-white shadow rounded-3xl"
         >
-          <div class="font-semibold ">Export data</div>
+          <div class="font-semibold">Export data</div>
 
           <div class="flex flex-col items-start w-full space-y-1">
             <label for="periodSelect" class="text-gray-700">Periode:</label>
@@ -157,7 +157,6 @@ import { Bar, Doughnut } from "vue-chartjs";
 ChartJS.defaults.font.family = "'Poppins', sans-serif";
 ChartJS.defaults.font.size = 12;
 ChartJS.defaults.color = "#333";
-const barBorderRadius = 14;
 
 ChartJS.register(
   Title,
@@ -187,12 +186,16 @@ const chartOptions = {
   maintainAspectRatio: false,
   scales: {
     y: {
+      stacked: true,
       beginAtZero: true,
       ticks: {
         font: {
           family: "'Poppins', sans-serif",
         },
       },
+    },
+    x: {
+      stacked: true,
     },
   },
   plugins: {
@@ -207,24 +210,32 @@ const chartOptions = {
     tooltip: {
       callbacks: {
         label: (context) => {
-          const val = context.raw;
-          const datasetLabel = context.dataset.label;
+          const chart = context.chart;
+          const dataIndex = context.dataIndex;
+          const labels = [];
 
-          let unit = "";
-          const formattedVal = typeof val === "number" ? val.toFixed(1) : val;
-          if (datasetLabel === "CO" || datasetLabel === "CO2") {
-            unit = "ppm";
-          } else if (datasetLabel === "Suhu") {
-            unit = "°C";
-          } else if (datasetLabel === "Kecepatan Angin") {
-            unit = "km/h";
-          }
+          chart.data.datasets.forEach((dataset) => {
+            const value = dataset.data[dataIndex];
+            const datasetLabel = dataset.label;
 
-          return unit
-            ? `${datasetLabel} : ${formattedVal} ${unit}`
-            : `${formattedVal}`;
+            let unit = "";
+            const formattedVal =
+              typeof value === "number" ? value.toFixed(1) : value;
+
+            if (datasetLabel === "CO" || datasetLabel === "CO2") {
+              unit = "ppm";
+            } else if (datasetLabel === "Suhu") {
+              unit = "°C";
+            } else if (datasetLabel === "Kecepatan Angin") {
+              unit = "km/h";
+            }
+
+            labels.push(`${datasetLabel} : ${formattedVal} ${unit}`);
+          });
+
+          return labels;
         },
-        title: (context: { label: any }[]) => context[0].label,
+        title: (context) => context[0].label,
       },
     },
   },
@@ -242,25 +253,21 @@ const updateChartData = () => {
           label: "CO",
           data: [0, 0, 0, 0, 0, 0, 0],
           backgroundColor: "#3490dc",
-          borderRadius: barBorderRadius,
         },
         {
           label: "CO2",
           data: [0, 0, 0, 0, 0, 0, 0],
           backgroundColor: "#e3342f",
-          borderRadius: barBorderRadius,
         },
         {
           label: "Temperature",
           data: [0, 0, 0, 0, 0, 0, 0],
           backgroundColor: "#f6993f",
-          borderRadius: barBorderRadius,
         },
         {
           label: "Wind Speed",
           data: [0, 0, 0, 0, 0, 0, 0],
           backgroundColor: "#38c172",
-          borderRadius: barBorderRadius,
         },
       ],
     };
@@ -286,25 +293,21 @@ const updateChartData = () => {
         label: "CO",
         data: coData,
         backgroundColor: "#00587A",
-        borderRadius: barBorderRadius,
       },
       {
         label: "CO2",
         data: co2Data,
         backgroundColor: "#FFD700",
-        borderRadius: barBorderRadius,
       },
       {
         label: "Suhu",
         data: temperatureData,
         backgroundColor: "#3B6E3B",
-        borderRadius: barBorderRadius,
       },
       {
         label: "Kecepatan Angin",
         data: windspeedData,
         backgroundColor: "#795548",
-        borderRadius: barBorderRadius,
       },
     ],
   };
@@ -312,7 +315,7 @@ const updateChartData = () => {
 
 const doughnutChartOptions = {
   responsive: true,
-  maintainAspectRatio: false, 
+  maintainAspectRatio: false,
   plugins: {
     tooltip: {
       callbacks: {
@@ -322,13 +325,13 @@ const doughnutChartOptions = {
           // const total = context.dataset.data.reduce((sum, val) => sum + val, 0);
           // const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
           // return `${label}: ${value.toFixed(1)} ppm (${percentage}%)`;
-          return `${value} ppm`
+          return `${value} ppm`;
         },
         title: (context) => context[0].label,
       },
     },
     legend: {
-      position: "bottom", 
+      position: "bottom",
     },
   },
 };

@@ -41,12 +41,8 @@
       @mouseup="onMouseUp"
       @mouseleave="onMouseUp"
       @wheel.prevent="onWheel"
-      @touchstart.prevent="onTouchStart"
-      @touchmove.prevent="onTouchMove"
-      @touchend.prevent="onTouchEnd"
-      @touchcancel.prevent="onTouchEnd"
-    >
-      <div class="absolute z-10 flex space-x-2 top-4 right-4">
+      @touchstart="onTouchStart" @touchmove="onTouchMove"   @touchend="onTouchEnd"     @touchcancel="onTouchEnd"  >
+      <div class="absolute z-40 flex space-x-2 zoom-controls-panel top-4 right-4">
         <button
           @click="zoomIn"
           class="flex items-center justify-center w-10 h-10 bg-white rounded-full shadow hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -71,7 +67,6 @@
 
       <div class="absolute z-20 top-20 right-6 md:hidden">
         <div class="grid grid-cols-3 grid-rows-3 gap-0.5 w-36 h-36 opacity-80">
-          <!-- <button @mousedown="startContinuousPan('up-left')" @touchstart.prevent="startContinuousPan('up-left')" @mouseup="stopContinuousPan" @touchend.prevent="stopContinuousPan" @mouseleave="stopContinuousPan" class="col-start-1 row-start-1 pan-button">↖️</button> -->
           <button
             @mousedown="startContinuousPan('up')"
             @touchstart.prevent="startContinuousPan('up')"
@@ -82,7 +77,6 @@
           >
             ⬆️
           </button>
-          <!-- <button @mousedown="startContinuousPan('up-right')" @touchstart.prevent="startContinuousPan('up-right')" @mouseup="stopContinuousPan" @touchend.prevent="stopContinuousPan" @mouseleave="stopContinuousPan" class="col-start-3 row-start-1 pan-button">↗️</button> -->
           <button
             @mousedown="startContinuousPan('left')"
             @touchstart.prevent="startContinuousPan('left')"
@@ -104,7 +98,6 @@
           >
             ➡️
           </button>
-          <!-- <button @mousedown="startContinuousPan('down-left')" @touchstart.prevent="startContinuousPan('down-left')" @mouseup="stopContinuousPan" @touchend.prevent="stopContinuousPan" @mouseleave="stopContinuousPan" class="col-start-1 row-start-3 pan-button">↙️</button> -->
           <button
             @mousedown="startContinuousPan('down')"
             @touchstart.prevent="startContinuousPan('down')"
@@ -115,8 +108,7 @@
           >
             ⬇️
           </button>
-          <!-- <button @mousedown="startContinuousPan('down-right')" @touchstart.prevent="startContinuousPan('down-right')" @mouseup="stopContinuousPan" @touchend.prevent="stopContinuousPan" @mouseleave="stopContinuousPan" class="col-start-3 row-start-3 pan-button">↘️</button> -->
-        </div>
+          </div>
       </div>
 
       <div
@@ -141,6 +133,9 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, nextTick, onBeforeUnmount } from "vue";
+
+// Asumsi MapsSiderbar adalah komponen yang sudah ada atau akan diimpor
+// import MapsSiderbar from './MapsSiderbar.vue'; // Contoh jika ini adalah komponen terpisah
 
 const isSidebarOpen = ref(false);
 
@@ -223,9 +218,11 @@ const resetZoom = () => {
 };
 
 const onMouseDown = (event: MouseEvent) => {
+  const targetElement = event.target as HTMLElement;
+  // MODIFIED: Use '.zoom-controls-panel' for checking target
   if (
-    (event.target as HTMLElement)?.closest(".pan-button") ||
-    (event.target as HTMLElement)?.closest(".absolute.z-10")
+    targetElement?.closest(".pan-button") ||
+    targetElement?.closest(".zoom-controls-panel")
   ) {
     return;
   }
@@ -253,13 +250,20 @@ const onMouseUp = () => {
 };
 
 const onTouchStart = (event: TouchEvent) => {
-  if (
-    (event.target as HTMLElement)?.closest(".pan-button") ||
-    (event.target as HTMLElement)?.closest(".absolute.z-10")
-  ) {
+  const targetElement = event.target as HTMLElement;
+  // MODIFIED: Use '.zoom-controls-panel' for checking target
+  const onPanButton = targetElement?.closest(".pan-button");
+  const onZoomControls = targetElement?.closest(".zoom-controls-panel");
+
+  if (onPanButton || onZoomControls) {
+    // If touch is on any control button, do not interfere.
+    // Let the button's own event handlers manage behavior.
     return;
   }
+
+  // If the touch is on the map itself (not on a button), then proceed with panning logic.
   if (event.touches.length === 1) {
+    event.preventDefault(); // MODIFIED: Call preventDefault conditionally
     isTouchPanning = true;
     const touch = event.touches[0];
     touchStartPosition.x = touch.clientX - dragPosition.x;
@@ -269,6 +273,7 @@ const onTouchStart = (event: TouchEvent) => {
 
 const onTouchMove = (event: TouchEvent) => {
   if (isTouchPanning && event.touches.length === 1 && image.value) {
+    event.preventDefault(); // MODIFIED: Call preventDefault conditionally
     const touch = event.touches[0];
     const newX = touch.clientX - touchStartPosition.x;
     const newY = touch.clientY - touchStartPosition.y;
@@ -359,7 +364,7 @@ const panImageImmediate = (direction: string) => {
   let dy = 0;
   const step = PAN_STEP;
 
-  const diagonalStep = step * 0.7071;
+  const diagonalStep = step * 0.7071; // Math.sqrt(step^2 / 2)
 
   switch (direction) {
     case "up":

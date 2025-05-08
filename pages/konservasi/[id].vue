@@ -96,7 +96,4 @@ onMounted(() => {
   });
 });
 
-// onBeforeRouteLeave(() => {
-//   plantsStore.resetPlantDetail();
-// });
 </script>
