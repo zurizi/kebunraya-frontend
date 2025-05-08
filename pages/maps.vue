@@ -9,7 +9,7 @@
 
     <button
       @click="isSidebarOpen = !isSidebarOpen"
-      class="absolute left-0 z-40 px-3 py-1.5 mb-4 text-black transition-transform duration-300 bg-white  top-4"
+      class="absolute left-0 z-40 px-3 py-1.5 mb-4 text-black transition-transform duration-300 bg-white top-4"
       :class="
         !isSidebarOpen
           ? 'ease-in translate-x-0 bg-opacity-50 rounded-r-2xl'
@@ -32,14 +32,19 @@
         />
       </svg>
     </button>
+
     <div
       ref="container"
-      class="relative w-full h-[800px] overflow-hidden border rounded-xl bg-gray-100"
+      class="relative w-full h-[800px] overflow-hidden border rounded-xl bg-gray-100 select-none"
       @mousedown="onMouseDown"
       @mousemove="onMouseMove"
       @mouseup="onMouseUp"
       @mouseleave="onMouseUp"
       @wheel.prevent="onWheel"
+      @touchstart.prevent="onTouchStart"
+      @touchmove.prevent="onTouchMove"
+      @touchend.prevent="onTouchEnd"
+      @touchcancel.prevent="onTouchEnd"
     >
       <div class="absolute z-10 flex space-x-2 top-4 right-4">
         <button
@@ -64,11 +69,62 @@
         </button>
       </div>
 
+      <div class="absolute z-20 top-20 right-6 md:hidden">
+        <div class="grid grid-cols-3 grid-rows-3 gap-0.5 w-36 h-36 opacity-80">
+          <!-- <button @mousedown="startContinuousPan('up-left')" @touchstart.prevent="startContinuousPan('up-left')" @mouseup="stopContinuousPan" @touchend.prevent="stopContinuousPan" @mouseleave="stopContinuousPan" class="col-start-1 row-start-1 pan-button">↖️</button> -->
+          <button
+            @mousedown="startContinuousPan('up')"
+            @touchstart.prevent="startContinuousPan('up')"
+            @mouseup="stopContinuousPan"
+            @touchend.prevent="stopContinuousPan"
+            @mouseleave="stopContinuousPan"
+            class="col-start-2 row-start-1 pan-button"
+          >
+            ⬆️
+          </button>
+          <!-- <button @mousedown="startContinuousPan('up-right')" @touchstart.prevent="startContinuousPan('up-right')" @mouseup="stopContinuousPan" @touchend.prevent="stopContinuousPan" @mouseleave="stopContinuousPan" class="col-start-3 row-start-1 pan-button">↗️</button> -->
+          <button
+            @mousedown="startContinuousPan('left')"
+            @touchstart.prevent="startContinuousPan('left')"
+            @mouseup="stopContinuousPan"
+            @touchend.prevent="stopContinuousPan"
+            @mouseleave="stopContinuousPan"
+            class="col-start-1 row-start-2 pan-button"
+          >
+            ⬅️
+          </button>
+          <div class="col-start-2 row-start-2"></div>
+          <button
+            @mousedown="startContinuousPan('right')"
+            @touchstart.prevent="startContinuousPan('right')"
+            @mouseup="stopContinuousPan"
+            @touchend.prevent="stopContinuousPan"
+            @mouseleave="stopContinuousPan"
+            class="col-start-3 row-start-2 pan-button"
+          >
+            ➡️
+          </button>
+          <!-- <button @mousedown="startContinuousPan('down-left')" @touchstart.prevent="startContinuousPan('down-left')" @mouseup="stopContinuousPan" @touchend.prevent="stopContinuousPan" @mouseleave="stopContinuousPan" class="col-start-1 row-start-3 pan-button">↙️</button> -->
+          <button
+            @mousedown="startContinuousPan('down')"
+            @touchstart.prevent="startContinuousPan('down')"
+            @mouseup="stopContinuousPan"
+            @touchend.prevent="stopContinuousPan"
+            @mouseleave="stopContinuousPan"
+            class="col-start-2 row-start-3 pan-button"
+          >
+            ⬇️
+          </button>
+          <!-- <button @mousedown="startContinuousPan('down-right')" @touchstart.prevent="startContinuousPan('down-right')" @mouseup="stopContinuousPan" @touchend.prevent="stopContinuousPan" @mouseleave="stopContinuousPan" class="col-start-3 row-start-3 pan-button">↘️</button> -->
+        </div>
+      </div>
+
       <div
         class="w-full h-full"
         :style="{
           transform: `translate(${dragPosition.x}px, ${dragPosition.y}px) scale(${scale})`,
           transformOrigin: '0 0',
+          touchAction: 'none',
         }"
       >
         <img
@@ -84,25 +140,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick } from "vue";
+import { ref, reactive, onMounted, nextTick, onBeforeUnmount } from "vue";
 
 const isSidebarOpen = ref(false);
 
 const scale = ref(1);
 const dragPosition = reactive({ x: 0, y: 0 });
 const startPosition = reactive({ x: 0, y: 0 });
+const touchStartPosition = reactive({ x: 0, y: 0 });
 
 const image = ref<HTMLImageElement | null>(null);
 const container = ref<HTMLDivElement | null>(null);
 
 let isDragging = false;
+let isTouchPanning = false;
 
-const MIN_SCALE = 0.7;
-const MAX_SCALE = 1.3;
+const MIN_SCALE = 0.5;
+const MAX_SCALE = 3.0;
 const ZOOM_STEP = 0.1;
+const PAN_STEP = 25;
+const PAN_INTERVAL_DELAY = 50;
+
+let panIntervalId = ref<number | null>(null);
+let currentPanDirection = ref<string | null>(null);
 
 const clampDragPosition = (x: number, y: number, currentScale: number) => {
-  if (!container.value || !image.value) {
+  if (!container.value || !image.value || image.value.naturalWidth === 0) {
     return { x, y };
   }
 
@@ -137,7 +200,7 @@ const clampDragPosition = (x: number, y: number, currentScale: number) => {
 };
 
 const centerImage = () => {
-  if (image.value && container.value) {
+  if (image.value && container.value && image.value.naturalWidth > 0) {
     const containerWidth = container.value.clientWidth;
     const containerHeight = container.value.clientHeight;
     const imageNaturalWidth = image.value.naturalWidth;
@@ -146,117 +209,235 @@ const centerImage = () => {
     const centerX = (containerWidth - imageNaturalWidth * scale.value) / 2;
     const centerY = (containerHeight - imageNaturalHeight * scale.value) / 2;
 
-    dragPosition.x = centerX;
-    dragPosition.y = centerY;
+    const clamped = clampDragPosition(centerX, centerY, scale.value);
+    dragPosition.x = clamped.x;
+    dragPosition.y = clamped.y;
   }
 };
 
 const resetZoom = () => {
   scale.value = 1;
-
   nextTick(() => {
     centerImage();
   });
 };
 
 const onMouseDown = (event: MouseEvent) => {
-  if (event.target !== container.value && event.target !== image.value) {
+  if (
+    (event.target as HTMLElement)?.closest(".pan-button") ||
+    (event.target as HTMLElement)?.closest(".absolute.z-10")
+  ) {
     return;
   }
-
   isDragging = true;
-
   startPosition.x = event.clientX - dragPosition.x;
   startPosition.y = event.clientY - dragPosition.y;
-
-  if (container.value) {
-    container.value.style.cursor = "grabbing";
-  }
+  if (container.value) container.value.style.cursor = "grabbing";
 };
 
 const onMouseMove = (event: MouseEvent) => {
-  if (isDragging && container.value && image.value) {
+  if (isDragging && image.value) {
     const newX = event.clientX - startPosition.x;
     const newY = event.clientY - startPosition.y;
-
     const clampedPosition = clampDragPosition(newX, newY, scale.value);
-
     dragPosition.x = clampedPosition.x;
     dragPosition.y = clampedPosition.y;
   }
 };
 
 const onMouseUp = () => {
-  isDragging = false;
+  if (isDragging) {
+    isDragging = false;
+    if (container.value) container.value.style.cursor = "grab";
+  }
+};
 
-  if (container.value) {
-    container.value.style.cursor = "grab";
+const onTouchStart = (event: TouchEvent) => {
+  if (
+    (event.target as HTMLElement)?.closest(".pan-button") ||
+    (event.target as HTMLElement)?.closest(".absolute.z-10")
+  ) {
+    return;
+  }
+  if (event.touches.length === 1) {
+    isTouchPanning = true;
+    const touch = event.touches[0];
+    touchStartPosition.x = touch.clientX - dragPosition.x;
+    touchStartPosition.y = touch.clientY - dragPosition.y;
+  }
+};
+
+const onTouchMove = (event: TouchEvent) => {
+  if (isTouchPanning && event.touches.length === 1 && image.value) {
+    const touch = event.touches[0];
+    const newX = touch.clientX - touchStartPosition.x;
+    const newY = touch.clientY - touchStartPosition.y;
+    const clampedPosition = clampDragPosition(newX, newY, scale.value);
+    dragPosition.x = clampedPosition.x;
+    dragPosition.y = clampedPosition.y;
+  }
+};
+
+const onTouchEnd = () => {
+  if (isTouchPanning) {
+    isTouchPanning = false;
   }
 };
 
 const onWheel = (event: WheelEvent) => {
+  if (!container.value) return;
+  event.preventDefault();
   const zoomDirection = event.deltaY > 0 ? -1 : 1;
-  const newScale = scale.value + zoomDirection * ZOOM_STEP;
+  const newScaleAttempt = scale.value + zoomDirection * ZOOM_STEP;
+  const oldScale = scale.value;
 
-  const clampedScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+  scale.value = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScaleAttempt));
 
-  if (clampedScale !== scale.value) {
-    scale.value = clampedScale;
+  if (scale.value !== oldScale) {
+    const containerRect = container.value.getBoundingClientRect();
+    const mouseX = event.clientX - containerRect.left;
+    const mouseY = event.clientY - containerRect.top;
+
+    const imageXBeforeZoom = (mouseX - dragPosition.x) / oldScale;
+    const imageYBeforeZoom = (mouseY - dragPosition.y) / oldScale;
+
+    dragPosition.x = mouseX - imageXBeforeZoom * scale.value;
+    dragPosition.y = mouseY - imageYBeforeZoom * scale.value;
 
     const clampedPosition = clampDragPosition(
       dragPosition.x,
       dragPosition.y,
       scale.value
     );
-
     dragPosition.x = clampedPosition.x;
     dragPosition.y = clampedPosition.y;
+  }
+};
+
+const applyZoomCentered = (newScaleValue: number) => {
+  const oldScale = scale.value;
+  scale.value = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScaleValue));
+
+  if (
+    scale.value !== oldScale &&
+    container.value &&
+    image.value &&
+    image.value.naturalWidth > 0
+  ) {
+    const containerWidth = container.value.clientWidth;
+    const containerHeight = container.value.clientHeight;
+
+    const centerX = containerWidth / 2;
+    const centerY = containerHeight / 2;
+
+    const imageXBeforeZoom = (centerX - dragPosition.x) / oldScale;
+    const imageYBeforeZoom = (centerY - dragPosition.y) / oldScale;
+
+    dragPosition.x = centerX - imageXBeforeZoom * scale.value;
+    dragPosition.y = centerY - imageYBeforeZoom * scale.value;
+
+    const clamped = clampDragPosition(
+      dragPosition.x,
+      dragPosition.y,
+      scale.value
+    );
+    dragPosition.x = clamped.x;
+    dragPosition.y = clamped.y;
   }
 };
 
 const zoomIn = () => {
-  const newScale = scale.value + ZOOM_STEP;
-  const clampedScale = Math.min(MAX_SCALE, newScale);
-  if (clampedScale !== scale.value) {
-    scale.value = clampedScale;
-    const clampedPosition = clampDragPosition(
-      dragPosition.x,
-      dragPosition.y,
-      scale.value
-    );
-    dragPosition.x = clampedPosition.x;
-    dragPosition.y = clampedPosition.y;
-  }
+  applyZoomCentered(scale.value + ZOOM_STEP);
 };
 
 const zoomOut = () => {
-  const newScale = scale.value - ZOOM_STEP;
-  const clampedScale = Math.max(MIN_SCALE, newScale);
-  if (clampedScale !== scale.value) {
-    scale.value = clampedScale;
-    const clampedPosition = clampDragPosition(
-      dragPosition.x,
-      dragPosition.y,
-      scale.value
-    );
-    dragPosition.x = clampedPosition.x;
-    dragPosition.y = clampedPosition.y;
+  applyZoomCentered(scale.value - ZOOM_STEP);
+};
+
+const panImageImmediate = (direction: string) => {
+  let dx = 0;
+  let dy = 0;
+  const step = PAN_STEP;
+
+  const diagonalStep = step * 0.7071;
+
+  switch (direction) {
+    case "up":
+      dy = step;
+      break;
+    case "down":
+      dy = -step;
+      break;
+    case "left":
+      dx = step;
+      break;
+    case "right":
+      dx = -step;
+      break;
+    case "up-left":
+      dy = diagonalStep;
+      dx = diagonalStep;
+      break;
+    case "up-right":
+      dy = diagonalStep;
+      dx = -diagonalStep;
+      break;
+    case "down-left":
+      dy = -diagonalStep;
+      dx = diagonalStep;
+      break;
+    case "down-right":
+      dy = -diagonalStep;
+      dx = -diagonalStep;
+      break;
+    default:
+      return;
   }
+
+  const newX = dragPosition.x + dx;
+  const newY = dragPosition.y + dy;
+
+  const clampedPosition = clampDragPosition(newX, newY, scale.value);
+  dragPosition.x = clampedPosition.x;
+  dragPosition.y = clampedPosition.y;
+};
+
+const startContinuousPan = (direction: string) => {
+  stopContinuousPan();
+  currentPanDirection.value = direction;
+  panImageImmediate(direction);
+  panIntervalId.value = setInterval(() => {
+    if (currentPanDirection.value) {
+      panImageImmediate(currentPanDirection.value);
+    }
+  }, PAN_INTERVAL_DELAY) as unknown as number;
+};
+
+const stopContinuousPan = () => {
+  if (panIntervalId.value !== null) {
+    clearInterval(panIntervalId.value);
+    panIntervalId.value = null;
+  }
+  currentPanDirection.value = null;
+};
+
+const handleImageLoad = () => {
+  nextTick(() => {
+    centerImage();
+  });
+};
+const handleImageError = () => {
+  console.error("Gagal memuat gambar peta.");
 };
 
 onMounted(() => {
   const imgElement = image.value;
   if (imgElement) {
-    if (imgElement.complete) {
-      centerImage();
+    if (imgElement.complete && imgElement.naturalWidth > 0) {
+      handleImageLoad();
     } else {
-      imgElement.addEventListener("load", () => {
-        centerImage();
-      });
-
-      imgElement.addEventListener("error", () => {
-        console.error("Error loading image");
-      });
+      imgElement.addEventListener("load", handleImageLoad);
+      imgElement.addEventListener("error", handleImageError);
     }
   }
 
@@ -265,40 +446,24 @@ onMounted(() => {
   }
 });
 
-import { onBeforeUnmount } from "vue";
-
 onBeforeUnmount(() => {
   const imgElement = image.value;
   if (imgElement) {
-    imgElement.removeEventListener("load", () => {
-      /* handler */
-    });
-    imgElement.removeEventListener("error", () => {
-      /* handler */
-    });
+    imgElement.removeEventListener("load", handleImageLoad);
+    imgElement.removeEventListener("error", handleImageError);
   }
-
   if (container.value) {
     container.value.style.cursor = "";
   }
+  stopContinuousPan();
 });
 </script>
 
 <style scoped>
-/* Hapus transisi pada w-full jika tidak diinginkan saat drag/zoom */
-/* Transisi yang diinginkan mungkin pada transform saja */
-/* .w-full {
-  transition: transform 0.2s ease-out;
-} */
-
-/* Tambahkan transisi hanya pada properti transform jika diinginkan */
-/*
-.w-full {
-    transition-property: transform;
-    transition-duration: 0.2s;
-    transition-timing-function: ease-out;
+.pan-button {
+  @apply p-1 bg-white rounded-full shadow-md active:bg-gray-200 aspect-square flex justify-center items-center text-xl;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
-*/
-
-/* Pointer events none dan user select none sudah ada di template */
 </style>

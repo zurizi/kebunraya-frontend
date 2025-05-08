@@ -10,7 +10,7 @@
     >
       <div class="flex flex-col items-center w-full space-y-8 md:space-y-20">
         <div
-          class="flex flex-col w-full px-8 py-8 bg-white shadow md:px-12 md:flex-row rounded-3xl"
+          class="flex flex-col w-full px-8 py-8 bg-white shadow md:px-12 rounded-3xl"
         >
           <div
             class="flex flex-col space-x-0 space-y-2 md:space-y-0 md:space-x-4 md:flex-row"
@@ -23,10 +23,10 @@
               />
             </div>
             <div class="flex flex-col w-full space-y-4 sm:w-1/2">
-              <h1 class="text-3xl font-bold text-gray-900">
+              <h1 class="text-2xl font-bold text-gray-900 md:text-3xl">
                 Mengenal Kebun Raya Bunda Hayati
               </h1>
-              <p class="text-xl text-justify">
+              <p class="text-base text-justify md:text-xl">
                 Kebun Raya Bunda Hayati di Tanjung Selor, Kabupaten Bulungan,
                 Kalimantan Utara, dikembangkan sejak 2023 sebagai pusat
                 konservasi, edukasi, dan rekreasi. Mengusung filosofi
@@ -36,7 +36,7 @@
               </p>
             </div>
           </div>
-          <p class="text-xl text-justify">
+          <p class="text-base text-justify md:text-xl">
             Didukung BRIN dan APBD, kawasan ini juga menjadi ruang hijau yang
             mendukung UMKM serta pelestarian lingkungan, menjadikannya ikon baru
             Kalimantan Utara yang mengintegrasikan aspek ekologis, sosial, dan
@@ -46,12 +46,12 @@
         <div class="w-full px-8 py-8 bg-white shadow md:px-12 rounded-3xl">
           <div class="flex space-x-4">
             <div class="flex flex-col w-full space-y-4">
-              <h1 class="text-3xl font-bold text-gray-900">
+              <h1 class="text-2xl font-bold text-gray-900 md:text-3xl">
                 Visi dan Misi Kebun Raya Bundahayati
               </h1>
               <div class="flex flex-col space-y-1">
-                <h6 class="text-xl font-semibold">Visi :</h6>
-                <p class="text-xl text-justify">
+                <h6 class="text-base font-semibold md:text-xl">Visi :</h6>
+                <p class="text-base text-justify md:text-xl">
                   Setiap kebun raya harus memiliki visi yang spesifik sesuai
                   dengan karakteristik dan keunggulan komparatif yang dimiliki.
                   Kabupaten Bulungan dengan visi nya “Mewujudkan Kabupaten
@@ -63,8 +63,8 @@
                 </p>
               </div>
               <div class="flex flex-col space-y-1">
-                <h6 class="text-xl font-semibold">Misi :</h6>
-                <div class="text-xl">
+                <h6 class="text-base font-semibold md:text-xl">Misi :</h6>
+                <div class="text-base md:text-xl">
                   <ol class="space-y-2 list-decimal list-inside">
                     <li>
                       Meningkatkan kuantitas dan koleksi tumbuhan, terutama
@@ -89,11 +89,11 @@
         </div>
         <div class="w-full px-8 py-8 bg-white shadow md:px-12 rounded-3xl">
           <div class="flex flex-col w-full space-y-4">
-            <h1 class="text-3xl font-bold text-gray-900">
+            <h1 class="text-2xl font-bold text-gray-900 md:text-3xl">
               Ikon Kebun Raya Bundahayati
             </h1>
             <div class="flex flex-col-reverse md:space-x-4 md:flex-row">
-              <div class="flex flex-col w-full text-xl md:w-10/12">
+              <div class="flex flex-col w-full text-base md:text-xl md:w-10/12">
                 <p class="text-justify">
                   Pada sebuah kebun raya, lazim disematkan suatu ikon atau
                   maskot yang menjadi identitas kebun raya tersebut dengan
@@ -117,7 +117,9 @@
                 </p>
               </div>
 
-              <div class="grid w-full grid-cols-2 gap-5 mb-2 md:mb-0 md:space-y-4 md:grid-cols-1 lg:w-2/12">
+              <div
+                class="grid w-full grid-cols-2 gap-5 mb-2 md:mb-0 md:space-y-4 md:grid-cols-1 lg:w-2/12"
+              >
                 <Image
                   src="/pages/tentang-kami/daun lepiu 1.png"
                   alt=""

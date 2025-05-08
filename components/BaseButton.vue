@@ -2,7 +2,7 @@
   <button
     :type="type"
     :disabled="disabled"
-    class="flex px-6 py-2 text-base transition-all duration-500 rounded-full hover:translate-y-1"
+    class="flex px-6 py-2 text-sm transition-all duration-500 rounded-full md:text-base hover:translate-y-1"
     :class="[variantClasses, `text-${textAlign}`, addClass]"
     :style="{ width }"
     @click="handleClick($event)"
