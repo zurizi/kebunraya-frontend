@@ -96,6 +96,9 @@
               <option value="custom">Custom</option>
             </select>
           </div>
+          <!-- <div v-if="selectedPeriod == 'custom'" class="flex text-sm text-red-600">
+            *Maksimal Rentang Hanya 1 Tahun
+          </div> -->
           <div class="flex justify-between w-full">
             <div class="flex flex-col items-start space-y-1">
               <label for="startDateInput" class="text-gray-700">Dari:</label>
@@ -320,11 +323,7 @@ const doughnutChartOptions = {
     tooltip: {
       callbacks: {
         label: (context) => {
-          // const label = context.label || "";
           const value = context.raw;
-          // const total = context.dataset.data.reduce((sum, val) => sum + val, 0);
-          // const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-          // return `${label}: ${value.toFixed(1)} ppm (${percentage}%)`;
           return `${value} ppm`;
         },
         title: (context) => context[0].label,
@@ -337,38 +336,6 @@ const doughnutChartOptions = {
 };
 
 const doughnutChartData = computed(() => {
-  // const weekData =
-  //   monitoringStore.weeklyDashboardData?.[`minggu-${currentWeek.value}`];
-
-  // let sumCO = 0;
-  // let countCO = 0;
-  // let sumCO2 = 0;
-  // let countCO2 = 0;
-
-  // if (weekData) {
-  //   Object.values(weekData).forEach((dayData) => {
-  //     const coValue = parseFloat(dayData?.co);
-
-  //     if (!isNaN(coValue)) {
-  //       sumCO += coValue;
-  //       if (coValue !== 0) {
-  //         countCO++;
-  //       }
-  //     }
-
-  //     const co2Value = parseFloat(dayData?.co2);
-
-  //     if (!isNaN(co2Value)) {
-  //       sumCO2 += co2Value;
-  //       if (co2Value !== 0) {
-  //         countCO2++;
-  //       }
-  //     }
-  //   });
-  // }
-  // const averageCO = countCO > 0 ? sumCO / countCO : 0;
-  // const averageCO2 = countCO2 > 0 ? sumCO2 / countCO2 : 0;
-
   return {
     labels: ["CO", "CO2"],
     datasets: [
@@ -503,7 +470,6 @@ watch(selectedPeriod, (newPeriod) => {
 
 watch([startDate, endDate], () => {
   if (!settingDatesFromPeriod.value) {
-    console.log("Manual date change detected, setting period to custom");
     selectedPeriod.value = "custom";
   }
 });
