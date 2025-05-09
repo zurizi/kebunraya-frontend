@@ -1,7 +1,7 @@
 <template>
   <footer class="text-white bg-green-900">
     <div
-      class="flex flex-col w-full px-8 pt-8 pb-6 mx-auto md:px-18 md:container lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
+      class="flex flex-col w-full px-8 pt-8 pb-6 mx-auto md:px-18   lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
     >
       <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div class="flex flex-col space-y-4">

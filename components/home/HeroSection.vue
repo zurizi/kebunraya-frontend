@@ -8,7 +8,7 @@
         />
       </div>
       <div
-        class="relative flex items-center h-full px-8 sm:px-14 md:px-18 md:container lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
+        class="relative flex items-center h-full px-8 sm:px-14 md:px-18   lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
       >
         <div class="relative flex flex-col w-full space-y-5 lg:w-1/2">
           <h1

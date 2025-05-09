@@ -1,7 +1,7 @@
 <template>
   <section id="acara">
     <div
-      class="flex flex-col w-full px-8 space-y-4 sm:px-14 md:px-18 md:container lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
+      class="flex flex-col w-full px-8 space-y-4 sm:px-14 md:px-18   lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
     >
       <div class="text-xl font-semibold">Jangan Lewatkan Acara Kami</div>
       <p>

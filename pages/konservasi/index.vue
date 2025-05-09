@@ -42,7 +42,7 @@ onBeforeRouteLeave((to, from, next) => {
       v-else-if="
         Array.isArray(plantsStore.plantList) && plantsStore.plantList.length > 0
       "
-      class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
+      class="grid w-full grid-cols-2 gap-4 xl:gap-6 3xl:gap-8 lg:grid-cols-3"
     >
       <nuxt-link
         v-for="plant in plantsStore.plantList"
@@ -59,27 +59,27 @@ onBeforeRouteLeave((to, from, next) => {
               : '/placeholder-image.jpg'
           "
           :alt="`Gambar ${plant.nama_lokal || 'Tanaman'}`"
-          class="object-cover w-full max-h-64"
+          class="object-cover w-full max-h-32 sm:max-h-48 xl:max-h-64"
         />
 
-        <div class="flex flex-col w-full p-4 space-y-2">
-          <div class="flex w-full space-x-2">
-            <div class="flex justify-between w-5/12">
+        <div class="flex flex-col w-full p-2 space-y-1 md:space-y-2 md:p-4">
+          <div class="flex w-full space-x-2 font-semibold">
+            <div class="justify-between hidden w-5/12 lg:flex">
               <span>Nama Ilmiah</span>
               <span>:</span>
             </div>
-            <div class="flex w-7/12">{{ plant.nama_ilmiah }}</div>
+            <div class="flex w-full lg:w-7/12">{{ plant.nama_ilmiah }}</div>
           </div>
 
           <div class="flex w-full space-x-2">
-            <div class="flex justify-between w-5/12">
+            <div class="justify-between hidden w-5/12 lg:flex">
               <span>Nama Lokal</span>
               <span>:</span>
             </div>
-            <div class="flex w-7/12">{{ plant.nama_lokal }}</div>
+            <div class="flex w-full lg:w-7/12">{{ plant.nama_lokal }}</div>
           </div>
 
-          <div class="flex w-full space-x-2">
+          <div class="hidden w-full space-x-2 lg:flex">
             <div class="flex justify-between w-5/12">
               <span>Keluarga</span>
               <span>:</span>
@@ -87,7 +87,7 @@ onBeforeRouteLeave((to, from, next) => {
             <div class="flex w-7/12">{{ plant.keluarga }}</div>
           </div>
 
-          <div class="flex w-full space-x-2">
+          <div class="hidden w-full space-x-2 lg:flex">
             <div class="flex justify-between w-5/12">
               <span>Umur</span>
               <span>:</span>
@@ -95,7 +95,7 @@ onBeforeRouteLeave((to, from, next) => {
             <div class="flex w-7/12">{{ plant.umur }}</div>
           </div>
 
-          <div class="flex w-full space-x-2">
+          <div class="hidden w-full space-x-2 lg:flex">
             <div class="flex justify-between w-5/12">
               <span>Perawakan</span>
               <span>:</span>
@@ -103,12 +103,14 @@ onBeforeRouteLeave((to, from, next) => {
             <div class="flex w-7/12">{{ plant.perawakan }}</div>
           </div>
 
-          <div class="flex w-full space-x-2" v-if="plant.category">
+          <div class="hidden w-full space-x-2 lg:flex" v-if="plant.category">
             <div class="flex justify-between w-5/12">
               <span>Kategori</span>
               <span>:</span>
             </div>
-            <div class="flex w-7/12">{{ plant.category.nama_kategori }}</div>
+            <div class="flex w-7/12">
+              {{ plant.category.nama_kategori }}
+            </div>
           </div>
         </div>
       </nuxt-link>

@@ -1,7 +1,7 @@
 <template>
   <header id="header-nav" class="relative">
     <div
-      class="fixed z-[9999] flex items-center justify-between w-full px-8 py-2 mx-auto bg-white border-b md:px-18 md:container lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
+      class="fixed z-[9999] flex items-center justify-between w-full px-8 py-2 mx-auto bg-white border-b md:px-18 lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
     >
       <div class="relative flex items-center justify-between w-full">
         <div class="flex md:hidden">
@@ -217,31 +217,31 @@ const navItems = [
 
       {
         name: "Tumbuhan Obat Kalimantan",
-        link: "/konservasi/kategori/tumbuhan-obat-kalimantan", 
+        link: "/konservasi/kategori/tumbuhan-obat-kalimantan",
       },
       {
         name: "Tumbuhan Etnobotani Kalimantan",
-        link: "/konservasi/kategori/tumbuhan-etnobotani-kalimantan", 
+        link: "/konservasi/kategori/tumbuhan-etnobotani-kalimantan",
       },
       {
         name: "Tumbuhan Buah Kalimantan",
-        link: "/konservasi/kategori/tumbuhan-buah-kalimantan", 
+        link: "/konservasi/kategori/tumbuhan-buah-kalimantan",
       },
       {
         name: "Tumbuhan Kayu",
-        link: "/konservasi/kategori/tumbuhan-kayu", 
+        link: "/konservasi/kategori/tumbuhan-kayu",
       },
       {
         name: "Tumbuhan Hias",
-        link: "/konservasi/kategori/tumbuhan-hias", 
+        link: "/konservasi/kategori/tumbuhan-hias",
       },
       {
         name: "Tumbuhan Air",
-        link: "/konservasi/kategori/tumbuhan-air", 
+        link: "/konservasi/kategori/tumbuhan-air",
       },
       {
         name: "Tumbuhan Anggrek Kalimantan",
-        link: "/konservasi/kategori/tumbuhan-anggrek-kalimantan", 
+        link: "/konservasi/kategori/tumbuhan-anggrek-kalimantan",
       },
     ],
   },
