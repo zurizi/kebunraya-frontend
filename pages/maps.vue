@@ -41,8 +41,15 @@
       @mouseup="onMouseUp"
       @mouseleave="onMouseUp"
       @wheel.prevent="onWheel"
-      @touchstart="onTouchStart" @touchmove="onTouchMove"   @touchend="onTouchEnd"     @touchcancel="onTouchEnd"  >
-      <div class="absolute z-40 flex space-x-2 zoom-controls-panel top-4 right-4">
+      @touchstart="onTouchStart"
+      @touchmove="onTouchMove"
+      @touchend="onTouchEnd"
+      @touchcancel="onTouchEnd"
+    >
+      <div
+        v-if="!isSidebarOpen"
+        class="absolute z-40 flex space-x-2 zoom-controls-panel top-4 right-4"
+      >
         <button
           @click="zoomIn"
           class="flex items-center justify-center w-10 h-10 bg-white rounded-full shadow hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -65,7 +72,7 @@
         </button>
       </div>
 
-      <div class="absolute z-20 top-20 right-6 md:hidden">
+      <div class="absolute z-20 top-20 right-6 md:hidden" v-if="!isSidebarOpen">
         <div class="grid grid-cols-3 grid-rows-3 gap-0.5 w-36 h-36 opacity-80">
           <button
             @mousedown="startContinuousPan('up')"
@@ -108,7 +115,7 @@
           >
             ⬇️
           </button>
-          </div>
+        </div>
       </div>
 
       <div
@@ -133,9 +140,6 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, nextTick, onBeforeUnmount } from "vue";
-
-// Asumsi MapsSiderbar adalah komponen yang sudah ada atau akan diimpor
-// import MapsSiderbar from './MapsSiderbar.vue'; // Contoh jika ini adalah komponen terpisah
 
 const isSidebarOpen = ref(false);
 
@@ -219,7 +223,6 @@ const resetZoom = () => {
 
 const onMouseDown = (event: MouseEvent) => {
   const targetElement = event.target as HTMLElement;
-  // MODIFIED: Use '.zoom-controls-panel' for checking target
   if (
     targetElement?.closest(".pan-button") ||
     targetElement?.closest(".zoom-controls-panel")
@@ -251,19 +254,16 @@ const onMouseUp = () => {
 
 const onTouchStart = (event: TouchEvent) => {
   const targetElement = event.target as HTMLElement;
-  // MODIFIED: Use '.zoom-controls-panel' for checking target
+
   const onPanButton = targetElement?.closest(".pan-button");
   const onZoomControls = targetElement?.closest(".zoom-controls-panel");
 
   if (onPanButton || onZoomControls) {
-    // If touch is on any control button, do not interfere.
-    // Let the button's own event handlers manage behavior.
     return;
   }
 
-  // If the touch is on the map itself (not on a button), then proceed with panning logic.
   if (event.touches.length === 1) {
-    event.preventDefault(); // MODIFIED: Call preventDefault conditionally
+    event.preventDefault();
     isTouchPanning = true;
     const touch = event.touches[0];
     touchStartPosition.x = touch.clientX - dragPosition.x;
@@ -273,7 +273,7 @@ const onTouchStart = (event: TouchEvent) => {
 
 const onTouchMove = (event: TouchEvent) => {
   if (isTouchPanning && event.touches.length === 1 && image.value) {
-    event.preventDefault(); // MODIFIED: Call preventDefault conditionally
+    event.preventDefault();
     const touch = event.touches[0];
     const newX = touch.clientX - touchStartPosition.x;
     const newY = touch.clientY - touchStartPosition.y;
