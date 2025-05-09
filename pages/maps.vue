@@ -72,7 +72,7 @@
         </button>
       </div>
 
-      <div class="absolute z-20 top-20 right-6 md:hidden" v-if="!isSidebarOpen">
+      <div class="absolute z-20 hidden top-20 right-6" v-if="!isSidebarOpen">
         <div class="grid grid-cols-3 grid-rows-3 gap-0.5 w-36 h-36 opacity-80">
           <button
             @mousedown="startContinuousPan('up')"
@@ -128,7 +128,7 @@
       >
         <img
           ref="image"
-          src="/pages/maps/map.png"
+          src="/pages/maps/new-map.png"
           alt="Map"
           class="pointer-events-none select-none max-w-none"
           @dragstart.prevent
@@ -143,7 +143,7 @@ import { ref, reactive, onMounted, nextTick, onBeforeUnmount } from "vue";
 
 const isSidebarOpen = ref(false);
 
-const scale = ref(1);
+const scale = ref(2.5);
 const dragPosition = reactive({ x: 0, y: 0 });
 const startPosition = reactive({ x: 0, y: 0 });
 const touchStartPosition = reactive({ x: 0, y: 0 });
@@ -215,7 +215,7 @@ const centerImage = () => {
 };
 
 const resetZoom = () => {
-  scale.value = 1;
+  scale.value = 2.5;
   nextTick(() => {
     centerImage();
   });

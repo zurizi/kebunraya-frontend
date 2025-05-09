@@ -64,9 +64,8 @@
               </nuxt-link>
               <div
                 v-else
-                @mouseenter="showDropdown[index] = true"
-                @mouseleave="showDropdown[index] = false"
-                class="relative px-1 py-1 font-semibold"
+                @click="item.isOpen = !item.isOpen"
+                class="relative px-1 py-1 font-semibold cursor-pointer"
               >
                 <button
                   class="flex items-center space-x-1.5 focus:outline-none"
@@ -88,7 +87,7 @@
                   </svg>
                 </button>
                 <div
-                  v-show="showDropdown[index]"
+                  v-if="item.dropdown && item.isOpen"
                   class="absolute left-0 z-50 pt-2 top-full min-w-max"
                 >
                   <div
@@ -116,7 +115,7 @@
 
     <div
       v-if="toggleNav"
-      class="fixed z-[9998] w-full h-full pt-24 bg-black md:hidden bg-opacity-40"
+      class="fixed z-[9998] w-full h-full pt-24 bg-black md:hidden bg-opacity-40 overflow-scroll"
       @click="toggleNav = false"
     >
       <nav
@@ -141,29 +140,30 @@
             >
               {{ item.text }}
             </nuxt-link>
-            <div
-              class="flex items-center space-x-2"
-              v-else
-              @click="toggleProduct = !toggleProduct"
-            >
-              <span>{{ item.text }}</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-4 h-4"
+            <template v-else>
+              <div
+                class="flex items-center space-x-2"
+                @click="item.isOpen = !item.isOpen"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                />
-              </svg>
-            </div>
+                <span>{{ item.text }}</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="w-4 h-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                  />
+                </svg>
+              </div>
+            </template>
             <div
-              v-if="item.dropdown && toggleProduct"
+              v-if="item.dropdown && item.isOpen"
               class="grid w-full grid-cols-1 gap-4 mt-5 overflow-hidden bg-white"
             >
               <div v-for="(subItem, subIndex) in item.dropdown" :key="subIndex">
@@ -193,22 +193,15 @@ import { useRoute } from "vue-router";
 
 const route = useRoute();
 
-const { login } = defineProps({
-  login: {
-    type: Boolean,
-  },
-});
-
 const toggleNav = ref(false);
-const toggleProduct = ref(false);
-const showDropdown = ref<Record<number, boolean>>({});
 
-const navItems = [
+const navItems = ref([
   { text: "Home", to: "/" },
   { text: "Monitoring", to: "/monitoring" },
   {
     text: "Konservasi",
     to: "#",
+    isOpen: false,
     dropdown: [
       {
         name: "Konservasi",
@@ -248,6 +241,7 @@ const navItems = [
   {
     text: "Kegiatan",
     to: "#",
+    isOpen: false,
     dropdown: [
       {
         name: "Study Tour",
@@ -261,7 +255,7 @@ const navItems = [
   },
   { text: "Maps", to: "/maps" },
   { text: "Tentang Kami", to: "/tentang-kami" },
-];
+]);
 </script>
 
 <style scoped></style>

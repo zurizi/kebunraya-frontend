@@ -1,7 +1,7 @@
 <template>
   <section id="peta-interaktif">
     <div
-      class="flex flex-col w-full px-8 space-y-4 sm:px-14 md:px-18   lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
+      class="flex flex-col w-full px-8 space-y-4 sm:px-14 md:px-18 lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
     >
       <div class="text-xl font-semibold">Peta Interaktif Kebun Raya</div>
       <p>
@@ -14,9 +14,9 @@
         >
       </nuxt-link>
 
-      <div class="flex w-full p-5 bg-yellow-500 h-96 rounded-3xl">
+      <div class="flex w-full p-5 bg-yellow-500 h-96 lg:h-[500px] rounded-3xl">
         <Image
-          src="/pages/maps/map.png"
+          src="/pages/maps/new-map.png"
           alt=""
           class="object-cover w-full h-full rounded-3xl"
         />
