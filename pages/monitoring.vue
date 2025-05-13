@@ -14,7 +14,7 @@
         class="w-full p-5 mb-8 bg-white border border-gray-100 shadow rounded-3xl"
       >
         <div class="w-full">
-          <Bar :data="chartData" :options="chartOptions" height="450" />
+          <Line :data="chartData" :options="chartOptions" height="450" />
         </div>
         <div class="flex items-center justify-between w-full mt-5 space-x-2">
           <button
@@ -151,11 +151,13 @@ import {
   Tooltip,
   Legend,
   BarElement,
+  LineElement,
+  PointElement,
   CategoryScale,
   LinearScale,
   ArcElement,
 } from "chart.js";
-import { Bar, Doughnut } from "vue-chartjs";
+import { Bar, Doughnut, Line } from "vue-chartjs";
 
 ChartJS.defaults.font.family = "'Poppins', sans-serif";
 ChartJS.defaults.font.size = 12;
@@ -166,6 +168,8 @@ ChartJS.register(
   Tooltip,
   Legend,
   BarElement,
+  LineElement,
+  PointElement,
   CategoryScale,
   LinearScale,
   ArcElement
@@ -189,16 +193,12 @@ const chartOptions = {
   maintainAspectRatio: false,
   scales: {
     y: {
-      stacked: true,
       beginAtZero: true,
       ticks: {
         font: {
           family: "'Poppins', sans-serif",
         },
       },
-    },
-    x: {
-      stacked: true,
     },
   },
   plugins: {
@@ -213,30 +213,22 @@ const chartOptions = {
     tooltip: {
       callbacks: {
         label: (context) => {
-          const chart = context.chart;
-          const dataIndex = context.dataIndex;
-          const labels = [];
+          const val = context.raw;
+          const datasetLabel = context.dataset.label;
 
-          chart.data.datasets.forEach((dataset) => {
-            const value = dataset.data[dataIndex];
-            const datasetLabel = dataset.label;
+          let unit = "";
+          const formattedVal = typeof val === "number" ? val.toFixed(1) : val;
+          if (datasetLabel === "CO" || datasetLabel === "CO2") {
+            unit = "ppm";
+          } else if (datasetLabel === "Suhu") {
+            unit = "°C";
+          } else if (datasetLabel === "Kecepatan Angin") {
+            unit = "m/s";
+          }
 
-            let unit = "";
-            const formattedVal =
-              typeof value === "number" ? value.toFixed(1) : value;
-
-            if (datasetLabel === "CO" || datasetLabel === "CO2") {
-              unit = "ppm";
-            } else if (datasetLabel === "Suhu") {
-              unit = "°C";
-            } else if (datasetLabel === "Kecepatan Angin") {
-              unit = "km/h";
-            }
-
-            labels.push(`${datasetLabel} : ${formattedVal} ${unit}`);
-          });
-
-          return labels;
+          return unit
+            ? `${datasetLabel} : ${formattedVal} ${unit}`
+            : `${formattedVal}`;
         },
         title: (context) => context[0].label,
       },
@@ -255,22 +247,26 @@ const updateChartData = () => {
         {
           label: "CO",
           data: [0, 0, 0, 0, 0, 0, 0],
-          backgroundColor: "#3490dc",
+          borderColor: "#00587A",
+          backgroundColor: "#00587A",
         },
         {
           label: "CO2",
           data: [0, 0, 0, 0, 0, 0, 0],
-          backgroundColor: "#e3342f",
+          borderColor: "#FFD700",
+          backgroundColor: "#FFD700",
         },
         {
-          label: "Temperature",
+          label: "Suhu",
           data: [0, 0, 0, 0, 0, 0, 0],
-          backgroundColor: "#f6993f",
+          borderColor: "#3B6E3B",
+          backgroundColor: "#3B6E3B",
         },
         {
-          label: "Wind Speed",
+          label: "Kecepatan Angin",
           data: [0, 0, 0, 0, 0, 0, 0],
-          backgroundColor: "#38c172",
+          borderColor: "#795548",
+          backgroundColor: "#795548",
         },
       ],
     };
@@ -295,21 +291,25 @@ const updateChartData = () => {
       {
         label: "CO",
         data: coData,
+        borderColor: "#00587A",
         backgroundColor: "#00587A",
       },
       {
         label: "CO2",
         data: co2Data,
+        borderColor: "#FFD700",
         backgroundColor: "#FFD700",
       },
       {
         label: "Suhu",
         data: temperatureData,
+        borderColor: "#3B6E3B",
         backgroundColor: "#3B6E3B",
       },
       {
         label: "Kecepatan Angin",
         data: windspeedData,
+        borderColor: "#795548",
         backgroundColor: "#795548",
       },
     ],
