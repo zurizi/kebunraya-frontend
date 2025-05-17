@@ -17,6 +17,7 @@
     "@types/axios": "^0.14.0",
     "axios": "^1.6.8",
     "chart.js": "^4.4.8",
+    "firebase": "^11.7.1",
     "nuxt": "^3.13.0",
     "pinia": "^3.0.2",
     "sweetalert2": "^11.19.1",

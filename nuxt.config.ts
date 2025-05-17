@@ -11,6 +11,7 @@ export default defineNuxtConfig({
     "@nuxt/image",
     "@pinia/nuxt",
   ],
+  plugins: ['~/plugins/firebase.client.ts'],
   ssr: false,
   // Konfigurasi PWA
   pwa: {
@@ -54,6 +55,16 @@ export default defineNuxtConfig({
       imgURL: "https://backend.kebunrayabundahayati.com/storage",
       // imgURL : "https://back-end-kebunraya.marannu.com"
       // imgURL : "http://backend-kebunraya.test/"
+
+      firebaseApiKey: process.env.FIREBASE_API_KEY,
+      firebaseAuthDomain: process.env.FIREBASE_AUTH_DOMAIN,
+      firebaseProjectId: process.env.FIREBASE_PROJECT_ID,
+      firebaseStorageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+      firebaseMessagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+      firebaseAppId: process.env.FIREBASE_APP_ID,
+      firebaseMeasurementId: process.env.FIREBASE_MEASUREMENT_ID,
+      firebaseVapidKey: process.env.NUXT_PUBLIC_FIREBASE_VAPID_KEY 
+
     },
   },
   devServer: {

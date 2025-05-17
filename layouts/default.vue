@@ -9,51 +9,37 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+// import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
-async function requestNotificationPermission() {
-  if ("Notification" in window) {
-    const permission = await Notification.requestPermission();
-    if (permission === "granted") {
-      console.log("Izin notifikasi diberikan.");
-      return true;
-    } else if (permission === "denied") {
-      console.log("Izin notifikasi ditolak.");
-      return false;
-    } else {
-      console.log("Pengguna menutup permintaan izin.");
-      return false;
-    }
-  } else {
-    console.log("Browser tidak mendukung notifikasi.");
-    return false;
-  }
-}
+// const { $firebase, $messaging } = useNuxtApp();
 
-async function showLocalNotification() {
-  if ("Notification" in window && Notification.permission === "granted") {
-    new Notification("Notifikasi Lokal dari Nuxt 3 (Tombol)", {
-      body: "Ini adalah contoh notifikasi lokal yang dipicu oleh tombol.",
-      icon: '/icons/android/android-launchericon-192-192.png',
-      vibrate: [100, 200, 100],
-      data: { customData: "Data tambahan notifikasi" },
-    });
-    console.log("Izin notifikasi diberikan. tombol");
-  } else {
-    console.log("Izin notifikasi belum diberikan atau ditolak.");
-  }
-}
+// const requestPermission = async () => {
+//   try {
+//     const permission = await Notification.requestPermission();
+//     if (permission === 'granted') {
+//       console.log('Notification permission granted.');
+//       const token = await getToken($messaging, {
+//         vapidKey: 'BHGH9DNq_6HCFSHH4gOIBUgtmMOJp7el56HZoiv7d8s-zbP8yBpPILxLyyR9hz02EEA0gy9rR22Q7RGVycx6FgA	', // Ganti dengan VAPID Key dari Firebase Console
+//       });
+//       console.log('Device token:', token);
+//       // Kirim token ke server Anda untuk menyimpan
+//     } else {
+//       console.log('Notification permission denied.');
+//     }
+//   } catch (error) {
+//     console.error('Error getting token:', error);
+//   }
+// };
 
-async function requestAndShowNotification() {
-  const granted = await requestNotificationPermission();
-  if (granted) {
-    showLocalNotification();
-  }
-}
+// onMounted(() => {
+//   requestPermission();
 
-onMounted(() => {
-  requestAndShowNotification();
-});
+//   // Tangani pesan saat aplikasi di foreground
+//   onMessage($messaging, (payload) => {
+//     console.log('Message received in foreground:', payload);
+//     // Tampilkan notifikasi atau update UI
+//   });
+// });
 </script>
 <style scoped>
 .nav-link {
