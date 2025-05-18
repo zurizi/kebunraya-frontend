@@ -28,10 +28,10 @@ export default defineNuxtConfig({
       enabled: true,
       type: "module",
     },
-    // workbox: {
-    //   navigateFallback: "/",
-    //   globPatterns: ["**/*.{js,css,html,png,svg,ico}"],
-    // },
+    workbox: {
+      navigateFallback: "/",
+      globPatterns: ["**/*.{js,css,html,png,svg,ico}"],
+    },
     strategies: "generateSW", // atau 'injectManifest'
     // registerType: 'autoUpdate', // Cara mendaftar service worker
     // Jika menggunakan generateSW, perlu tentukan path service worker
