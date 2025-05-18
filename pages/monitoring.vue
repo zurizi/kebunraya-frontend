@@ -96,9 +96,6 @@
               <option value="custom">Custom</option>
             </select>
           </div>
-          <!-- <div v-if="selectedPeriod == 'custom'" class="flex text-sm text-red-600">
-            *Maksimal Rentang Hanya 1 Tahun
-          </div> -->
           <div class="flex justify-between w-full">
             <div class="flex flex-col items-start space-y-1">
               <label for="startDateInput" class="text-gray-700">Dari:</label>
@@ -141,7 +138,7 @@
 <script setup lang="ts">
 import { useMonitoringStore } from "@/store/monitoring";
 import { onMounted, ref, computed, watch } from "vue";
-import { useRuntimeConfig } from "#app";
+import { useNuxtApp, useRuntimeConfig } from "#app";
 
 const runtimeConfig = useRuntimeConfig();
 
@@ -158,6 +155,8 @@ import {
   ArcElement,
 } from "chart.js";
 import { Bar, Doughnut, Line } from "vue-chartjs";
+
+const { $swal } = useNuxtApp();
 
 ChartJS.defaults.font.family = "'Poppins', sans-serif";
 ChartJS.defaults.font.size = 12;
@@ -474,28 +473,57 @@ watch([startDate, endDate], () => {
   }
 });
 
-const exportExcel = () => {
+const exportExcel = async () => {
   if (
     !startDate.value ||
     !endDate.value ||
     startDate.value === "Invalid Date" ||
     endDate.value === "Invalid Date"
   ) {
-    alert("Mohon pilih rentang tanggal terlebih dahulu.");
+    await $swal.fire({
+      icon: "warning",
+      title: "Perhatian",
+      text: "Mohon pilih rentang tanggal terlebih dahulu.",
+      confirmButtonText: "OK",
+    });
     return;
   }
 
   if (new Date(startDate.value) > new Date(endDate.value)) {
-    alert("Tanggal Mulai tidak boleh setelah Tanggal Selesai.");
+    await $swal.fire({
+      icon: "warning",
+      title: "Perhatian",
+      text: "Tanggal Mulai tidak boleh setelah Tanggal Selesai.",
+      confirmButtonText: "OK",
+    });
     return;
   }
 
-  const startDatetime = `${startDate.value}%2000:00:00`;
-  const endDatetime = `${endDate.value}%2023:59:59`;
+  const confirmResult = await $swal.fire({
+    icon: "question",
+    title: "Konfirmasi Ekspor",
+    text: `Apakah Anda yakin ingin mengekspor data dari tanggal ${startDate.value} sampai ${endDate.value} ke Excel?`,
+    showCancelButton: true,
+    confirmButtonText: "Ya, Ekspor Data!",
+    cancelButtonText: "Batal",
+    reverseButtons: true,
+  });
 
-  const apiUrl = `environment-data/export-excel?start_datetime=${startDatetime}&end_datetime=${endDatetime}`;
+  if (confirmResult.isConfirmed) {
+    const startDatetime = `${startDate.value}%2000:00:00`;
+    const endDatetime = `${endDate.value}%2023:59:59`;
+    const apiUrl = `environment-data/export-excel?start_datetime=${startDatetime}&end_datetime=${endDatetime}`;
 
-  window.open(runtimeConfig.public.axios.baseURL + apiUrl, "_blank");
+    window.open(runtimeConfig.public.axios.baseURL + apiUrl, "_blank");
+
+    await $swal.fire({
+      icon: "success",
+      title: "Berhasil",
+      text: "Proses export telah dimulai. File Excel akan diunduh atau terbuka di tab baru.",
+      confirmButtonText: "OK",
+    });
+  } else if (confirmResult.dismiss === $swal.DismissReason.cancel) {
+  }
 };
 
 onMounted(() => {
