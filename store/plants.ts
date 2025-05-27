@@ -77,7 +77,7 @@ export const usePlantsStore = defineStore("plants", () => {
         );
         plantList.value = [];
         totalPages.value = 1;
-        plantsListError.value = null; // Reset error untuk kasus tidak ada data
+        plantsListError.value = null; 
       }
     } finally {
       plantsListPending.value = false;
@@ -87,7 +87,7 @@ export const usePlantsStore = defineStore("plants", () => {
   async function fetchPlantDetail(id: string) {
     plantDetailPending.value = true;
     plantDetailError.value = null;
-    plantDetail.value = null; // Reset detail sebelum fetching baru
+    plantDetail.value = null; 
     try {
       const response = await $api.get(`/plants/${id}`);
       if (

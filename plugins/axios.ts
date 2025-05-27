@@ -3,7 +3,6 @@ import { defineNuxtPlugin } from "#app";
 
 export default defineNuxtPlugin((nuxtApp) => {
   const config = useRuntimeConfig();
-
   const api = axios.create({
     baseURL: config.public.axios.baseURL,
     headers: {
@@ -16,9 +15,10 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   api.interceptors.request.use(
     (config) => {
-      const token = useCookie("my-auth-token").value;
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      const storedToken = localStorage.getItem("authToken");
+
+      if (storedToken) {
+        config.headers.Authorization = `Bearer ${storedToken}`;
       }
       return config;
     },

@@ -3,7 +3,7 @@
     <div
       class="fixed z-[9999] flex items-center justify-between w-full px-8 py-2 mx-auto bg-white border-b md:px-18 lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
     >
-      <div class="relative flex items-center justify-between w-full">
+      <div class="relative flex items-center w-full md:justify-between">
         <div class="flex md:hidden">
           <button @click="toggleNav = !toggleNav">
             <svg
@@ -110,6 +110,17 @@
             </li>
           </ul>
         </nav>
+        <div class="absolute right-0 flex items-end md:relative">
+          <nuxt-link to="/login">
+            <BaseButton
+              width="auto"
+              addClass="px-6 text-xs px-12 md:px-16"
+              variant="outline"
+              color="white"
+              >Login</BaseButton
+            >
+          </nuxt-link>
+        </div>
       </div>
     </div>
 
