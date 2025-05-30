@@ -9,9 +9,9 @@ import { storeToRefs } from "pinia";
 
 const authStore = useAuthStore();
 
-const email = ref<string>("admin@kebunraya.com");
+const email = ref<string>("");
 
-const password = ref<string>("admin@kebunraya.com!");
+const password = ref<string>("");
 
 const {
   isLoading: storeIsLoading,
@@ -43,8 +43,6 @@ const handleLogin = async () => {
         </h2>
         <p class="mt-2 text-sm text-center text-gray-600">Masuk ke akun Anda</p>
       </div>
-
-      {{ token }}
 
       <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
         <div v-if="storeError" class="text-sm text-center text-red-600">
