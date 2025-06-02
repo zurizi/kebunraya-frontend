@@ -13,6 +13,7 @@ export const usePlantsStore = defineStore("plants", () => {
   const plantsListError = ref(null);
   const currentPage = ref(1);
   const totalPages = ref(1);
+  const totalPlantsCount = ref(0); // New state for total plants
   const searchText = ref("");
   const categoryId = ref("");
 
@@ -46,6 +47,17 @@ export const usePlantsStore = defineStore("plants", () => {
         response.data.status === "success" &&
         response.data.data
       ) {
+        // Update total plants count
+        if (response.data.data && typeof response.data.data.total === 'number') {
+          totalPlantsCount.value = response.data.data.total;
+        } else if (response.data.meta && typeof response.data.meta.total === 'number') {
+          totalPlantsCount.value = response.data.meta.total;
+        }
+        // Removed the 'else if Array.isArray(response.data.data)' for totalPlantsCount
+        // as it's less reliable if pagination is always expected to provide a 'total'.
+        // If no specific total field is found, totalPlantsCount will remain its previous value or 0.
+
+        // Process plant list and total pages for pagination
         if (
           Array.isArray(response.data.data.data) &&
           response.data.data.last_page !== undefined
@@ -53,12 +65,13 @@ export const usePlantsStore = defineStore("plants", () => {
           plantList.value = response.data.data.data;
           totalPages.value = response.data.data.last_page;
         } else if (
-          Array.isArray(response.data.data) &&
+          Array.isArray(response.data.data) && // Fallback for structures where data is direct array and last_page is sibling
           response.data.last_page !== undefined
         ) {
           plantList.value = response.data.data;
           totalPages.value = response.data.last_page;
         } else {
+          // This case suggests an unexpected structure for paginated data itself.
           console.error(
             "[Plants Store] Struktur respons API daftar tanaman tidak sesuai:",
             response.data.data
@@ -164,6 +177,7 @@ export const usePlantsStore = defineStore("plants", () => {
     plantsListError,
     currentPage,
     totalPages,
+    totalPlantsCount, // Expose totalPlantsCount
     searchText,
     fetchPlants,
     updatePage,
