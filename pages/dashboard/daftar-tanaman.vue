@@ -4,7 +4,7 @@
       <h1 class="text-2xl font-semibold">Daftar Tanaman</h1>
       <button
         @click="showCreateModal = true"
-        class="px-4 py-2 text-white bg-green-600 rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+        class="px-4 py-2 text-white bg-green-900 rounded-md shadow-sm hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
       >
         Tambah Tanaman Baru
       </button>
@@ -61,8 +61,8 @@
       Tidak ada tanaman tersedia.
     </div>
 
-    <Modal :show="showCreateModal" title="Tambah Tanaman Baru" @update:show="showCreateModal = $event">
-      <PlantForm @submit="handleCreatePlant" />
+    <Modal :show="showCreateModal" title="Tambah Tanaman Baru" @update:show="showCreateModal = $event" maxWidth="2xl">
+      <PlantForm @submit="handleCreatePlant" @close="showCreateModal = false" />
     </Modal>
   </div>
 </template>
