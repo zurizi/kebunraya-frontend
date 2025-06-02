@@ -19,8 +19,23 @@
           <input type="text" id="umur" v-model="formData.umur" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
         </div>
          <div>
-          <label for="category_id" class="block text-sm font-medium text-gray-700">Category ID</label>
-          <input type="text" id="category_id" v-model="formData.category_id" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+          <label for="category_id" class="block text-sm font-medium text-gray-700">Kategori</label>
+          <select
+            id="category_id"
+            v-model="formData.category_id"
+            :disabled="categoryListPending"
+            required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+          >
+            <option value="" disabled>-- Pilih Kategori --</option> <!-- Removed 'selected' here as v-model handles it -->
+            <option v-for="category in categoryList" :key="category.id" :value="category.id">
+              {{ category.nama_kategori }}
+            </option>
+          </select>
+          <p v-if="categoryListPending" class="mt-1 text-sm text-gray-500">Memuat kategori...</p>
+          <p v-if="categoryListError" class="mt-1 text-sm text-red-600">
+            Gagal memuat kategori. {{ categoryListError.message || '' }}
+          </p>
         </div>
         <div>
           <label for="perawakan" class="block text-sm font-medium text-gray-700">Perawakan</label>
@@ -56,20 +71,29 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue';
+import { reactive, onMounted } from 'vue';
+import { useCategoriesStore } from '~/store/categories';
+import { storeToRefs } from 'pinia';
 
 const emit = defineEmits(['submit']);
+
+const categoriesStore = useCategoriesStore();
+const { categoryList, categoryListPending, categoryListError } = storeToRefs(categoriesStore);
 
 const formData = reactive({
   nama_ilmiah: '',
   nama_lokal: '',
   keluarga: '',
   umur: '',
-  category_id: '',
+  category_id: '', // Ensures default option "Pilih Kategori" is selected
   perawakan: '',
   persebaran: '',
   deskripsi: '',
   gambar: null,
+});
+
+onMounted(() => {
+  categoriesStore.fetchCategories();
 });
 
 const handleFileUpload = (event) => {
