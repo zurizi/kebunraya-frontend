@@ -78,8 +78,7 @@
 <script setup lang="ts">
 import { usePlantsStore } from '~/store/plants';
 import { storeToRefs } from 'pinia';
-import { onMounted, ref } from 'vue';
-import { watchDebounced } from '@vueuse/core'; // Using @vueuse/core for debouncing
+import { onMounted, ref, watch } from 'vue'; // Added watch, removed watchDebounced
 import BaseTable from '~/components/Table/BaseTable.vue';
 import Pagination from '~/components/Pagination.vue';
 import { useRuntimeConfig } from "#app";
@@ -125,15 +124,33 @@ function performSearch() {
   plantsStore.fetchPlants();
 }
 
+const debouncedPerformSearch = debounce(performSearch, 500);
+
 // Watch for changes in searchQuery and trigger search with debounce
-watchDebounced(searchQuery, () => {
-  performSearch();
-}, { debounce: 500, maxWait: 1000 }); // Adjust timing as needed
+watch(searchQuery, () => {
+  // The debounced function will handle the delay.
+  debouncedPerformSearch();
+});
 
 // Handle page changes from Pagination component
 function handlePageChange(newPage: number) {
   plantsStore.currentPage = newPage;
   plantsStore.fetchPlants();
+}
+
+// Custom debounce function
+function debounce<T extends (...args: any[]) => void>(func: T, delay: number): (...args: Parameters<T>) => void {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  
+  return function(this: any, ...args: Parameters<T>) {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => {
+      func.apply(this, args);
+      timeoutId = null; // Clear timeoutId after function execution
+    }, delay);
+  };
 }
 
 // Handle plant creation
