@@ -8,7 +8,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <div class="w-full overflow-x-auto rounded-xl">
+  <div class="w-full overflow-x-scroll rounded-xl">
     <table class="min-w-full text-left border-collapse">
       <thead>
         <tr class="text-gray-600 bg-gray-100">

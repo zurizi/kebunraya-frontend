@@ -1,11 +1,11 @@
 <template>
   <div>
-    <h1 class="text-2xl font-semibold mb-4">Daftar Tanaman</h1>
+    <h1 class="mb-4 text-2xl font-semibold">Daftar Tanaman</h1>
 
-    <div v-if="plantsListPending" class="text-center py-4">
+    <div v-if="plantsListPending" class="py-4 text-center">
       Memuat data tanaman...
     </div>
-    <div v-else-if="plantsListError" class="text-center py-4 text-red-500">
+    <div v-else-if="plantsListError" class="py-4 text-center text-red-500">
       Gagal memuat data tanaman: {{ plantsListError.message || plantsListError }}
     </div>
     <div v-else-if="plantList && plantList.length > 0">
@@ -14,11 +14,11 @@
           type="text"
           v-model="searchQuery"
           placeholder="Cari tanaman..."
-          class="px-4 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 w-full sm:w-1/3"
+          class="w-full px-4 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:w-1/3"
         />
       </div>
 
-      <div v-if="filteredPlants.length === 0 && searchQuery" class="text-center py-4">
+      <div v-if="filteredPlants.length === 0 && searchQuery" class="py-4 text-center">
         Tidak ada tanaman yang cocok dengan pencarian "{{ searchQuery }}".
       </div>
       <BaseTable
@@ -32,8 +32,7 @@
             v-if="row.gambar"
             :src="getFullImageUrl(row.gambar)"
             alt="Tanaman"
-            class="object-cover w-16 h-16 rounded"
-            @error="onImageError"
+            class="object-cover w-20 h-10 rounded"
           />
           <span v-else>Tidak ada gambar</span>
         </template>
@@ -42,7 +41,7 @@
           {{ row.category && row.category.nama_kategori ? row.category.nama_kategori : 'N/A' }}
         </template>
       </BaseTable>
-      <div v-if="totalPagesLocal > 1" class="mt-6 flex justify-center">
+      <div v-if="totalPagesLocal > 1" class="flex justify-center mt-6">
         <Pagination
           :current-page="currentPageLocal"
           :total-pages="totalPagesLocal"
@@ -58,7 +57,7 @@
       <pre>{{ filteredPlants.slice(0, 2) }}</pre>
       -->
     </div>
-    <div v-else class="text-center py-4">
+    <div v-else class="py-4 text-center">
       Tidak ada tanaman tersedia.
     </div>
   </div>
@@ -70,11 +69,14 @@ import { storeToRefs } from 'pinia';
 import { onMounted, ref, computed, watch } from 'vue';
 import BaseTable from '~/components/Table/BaseTable.vue';
 import Pagination from '~/components/Pagination.vue';
+import { useRuntimeConfig } from "#app";
+
 
 definePageMeta({
   layout: 'dashboard',
 });
 
+const runtimeConfig = useRuntimeConfig();
 const searchQuery = ref('');
 const currentPageLocal = ref(1);
 const itemsPerPage = ref(10); // Or any default number you prefer
@@ -95,13 +97,9 @@ const getFullImageUrl = (imagePath: string | null | undefined): string => {
   if (imagePath.startsWith('http')) {
     return imagePath; // It's already a full URL
   }
-  return `/${imagePath.startsWith('/') ? imagePath.substring(1) : imagePath}`; // Ensure it's a root-relative path
+  return `${runtimeConfig.public.imgURL || runtimeConfig.public.imageCDN}/${imagePath.startsWith('/') ? imagePath.substring(1) : imagePath}`; // Ensure it's a root-relative path
 };
 
-const onImageError = (event: Event) => {
-  // console.error("Image failed to load:", (event.target as HTMLImageElement).src);
-  (event.target as HTMLImageElement).src = 'https://via.placeholder.com/64x64.png?text=Error'; // Placeholder for broken image
-};
 
 const plantsStore = usePlantsStore();
 const { plantList, plantsListPending, plantsListError } = storeToRefs(plantsStore);
