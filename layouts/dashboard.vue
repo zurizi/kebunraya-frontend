@@ -22,6 +22,7 @@
         <div class="p-4">
           <nav class="space-y-2">
             <NuxtLink to="/dashboard" class="sidebar-link">Dashboard</NuxtLink>
+            <NuxtLink to="/dashboard/daftar-tanaman" class="sidebar-link">Daftar Tanaman</NuxtLink>
           </nav>
         </div>
       </aside>
