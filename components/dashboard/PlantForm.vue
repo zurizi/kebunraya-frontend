@@ -80,31 +80,74 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, ref, onUnmounted } from 'vue'; // Added ref, onUnmounted
+import { reactive, onMounted, ref, onUnmounted, watch, defineProps } from 'vue'; // Added watch, defineProps
 import { useCategoriesStore } from '~/store/categories';
 import { storeToRefs } from 'pinia';
 
-const emit = defineEmits(['submit']);
+const props = defineProps({
+  isEditMode: {
+    type: Boolean,
+    default: false,
+  },
+  initialData: {
+    type: Object, // Using Object directly, as PropType might not be available
+    default: () => null,
+  },
+});
+
+const emit = defineEmits(['submit', 'close']); // Added 'close' to defineEmits
 
 const categoriesStore = useCategoriesStore();
 const { categoryList, categoryListPending, categoryListError } = storeToRefs(categoriesStore);
 
-const imagePreviewUrl = ref(null); // Added for image preview
+const imagePreviewUrl = ref(null);
 
-const formData = reactive({
+const initialFormData = {
   nama_ilmiah: '',
   nama_lokal: '',
   keluarga: '',
   umur: '',
-  category_id: '', // Ensures default option "Pilih Kategori" is selected
+  category_id: '',
   perawakan: '',
   persebaran: '',
   deskripsi: '',
   gambar: null,
-});
+};
+
+const formData = reactive({ ...initialFormData });
+
+function resetForm() {
+  Object.assign(formData, initialFormData); // Reset formData to initial empty state
+  if (imagePreviewUrl.value) {
+    URL.revokeObjectURL(imagePreviewUrl.value);
+    imagePreviewUrl.value = null;
+  }
+}
+
+watch(() => props.initialData, (newData) => {
+  resetForm(); // Reset form before populating for edit or clearing for non-edit
+  if (props.isEditMode && newData) {
+    for (const key in formData) {
+      if (newData.hasOwnProperty(key)) {
+        formData[key] = newData[key];
+      }
+    }
+    if (typeof newData.gambar === 'string' && newData.gambar) {
+      imagePreviewUrl.value = newData.gambar;
+      // formData.gambar is already set by the loop above
+    } else if (newData.gambar instanceof File) {
+      // This case is less likely for initialData from API but included for completeness
+      formData.gambar = newData.gambar;
+      imagePreviewUrl.value = URL.createObjectURL(newData.gambar);
+    }
+    // If newData.gambar is null or undefined, formData.gambar and imagePreviewUrl remain null due to resetForm
+  }
+}, { immediate: true, deep: true });
+
 
 onMounted(() => {
   categoriesStore.fetchCategories();
+  // Watcher with immediate:true handles initial population or reset
 });
 
 const handleImageChange = (event) => {
@@ -132,7 +175,12 @@ onUnmounted(() => {
 });
 
 const handleSubmit = () => {
-  emit('submit', formData);
+  // Create a plain object copy for submission, especially if not using FormData for everything
+  // For FormData usage as in the store, passing `formData` (the reactive proxy) is fine.
+  emit('submit', { ...formData }); 
 };
+
+// Expose resetForm to be called by parent if needed (e.g. after successful submit from parent view)
+// defineExpose({ resetForm }); // Optional: if parent needs to trigger reset
 </script>
 

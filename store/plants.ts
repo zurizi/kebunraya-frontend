@@ -25,6 +25,10 @@ export const usePlantsStore = defineStore("plants", () => {
   const plantCreatePending = ref(false);
   const plantCreateError = ref<any | null>(null);
 
+  // State untuk pembaruan tanaman
+  const plantUpdatePending = ref(false);
+  const plantUpdateError = ref<any | null>(null);
+
   async function fetchPlants() {
     plantsListPending.value = true;
     plantsListError.value = null;
@@ -180,6 +184,11 @@ export const usePlantsStore = defineStore("plants", () => {
     plantCreatePending,
     plantCreateError,
     createPlant,
+
+    // Update plant
+    plantUpdatePending,
+    plantUpdateError,
+    updatePlant,
   };
 
   async function createPlant(plantData: any) {
@@ -213,6 +222,57 @@ export const usePlantsStore = defineStore("plants", () => {
       throw err; // Rethrow to be caught by the calling component
     } finally {
       plantCreatePending.value = false;
+    }
+  }
+
+  async function updatePlant(plantId: string | number, plantData: any) {
+    plantUpdatePending.value = true;
+    plantUpdateError.value = null;
+
+    const formData = new FormData();
+
+    for (const key in plantData) {
+      if (plantData.hasOwnProperty(key)) {
+        if (key === 'gambar') {
+          if (plantData.gambar instanceof File) {
+            formData.append('gambar', plantData.gambar);
+          }
+        } else if (plantData[key] !== null && plantData[key] !== undefined && plantData[key] !== '') {
+          // Ensure category_id is not empty string, convert to null if it is, or handle as needed by backend
+          if (key === 'category_id' && plantData[key] === '') {
+            // If backend expects null for empty category_id, or if it should be omitted
+            // formData.append(key, null); // This might not work as expected with FormData
+            // Or simply don't append if backend handles omitted field as no change or error
+            // For now, let's assume empty string is not a valid ID and should not be sent,
+            // or backend handles it. If it must be null, specific handling is needed.
+            // The provided snippet appends if not null/undefined, so empty string would pass.
+            // Let's refine to not send empty string for category_id if it's meant to be optional or cleared.
+            // However, the PlantForm requires category_id, so it shouldn't be empty during update
+            // unless the requirement changes. Sticking to provided logic:
+             formData.append(key, plantData[key]);
+          } else {
+            formData.append(key, plantData[key]);
+          }
+        }
+      }
+    }
+    
+    // Backend might expect PUT for updates, but many PHP frameworks (like Laravel)
+    // listen for POST with a _method field to simulate PUT for FormData.
+    // formData.append('_method', 'PUT'); // Uncomment if backend (e.g. Laravel) needs this for FormData updates
+
+    try {
+      const response = await $api.post(`/plants/${plantId}`, formData, {
+        // Axios (which $api likely wraps) sets Content-Type to multipart/form-data
+        // automatically when FormData is used as the body.
+      });
+      return response.data;
+    } catch (err: any) {
+      console.error(`[Plants Store] Failed to update plant ${plantId}:`, err.response?.data || err.message || err);
+      plantUpdateError.value = err.response?.data || err;
+      throw err;
+    } finally {
+      plantUpdatePending.value = false;
     }
   }
 });

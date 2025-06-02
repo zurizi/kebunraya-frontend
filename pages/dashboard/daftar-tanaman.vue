@@ -90,6 +90,29 @@
     <Modal :show="showCreateModal" title="Tambah Tanaman Baru" @update:show="showCreateModal = $event" maxWidth="2xl">
       <PlantForm @submit="handleCreatePlant" @close="showCreateModal = false" />
     </Modal>
+
+    <!-- Modal for Editing Plant -->
+    <Modal 
+      :show="showEditModal" 
+      title="Edit Tanaman" 
+      @update:show="showEditModal = $event" 
+      maxWidth="2xl"
+    >
+      <div v-if="plantDetailPending" class="py-4 text-center">Memuat detail tanaman...</div>
+      <PlantForm 
+        v-else-if="editingPlant"
+        :isEditMode="true" 
+        :initialData="editingPlant" 
+        @submit="handleUpdatePlant" 
+        @close="showEditModal = false" 
+      />
+      <div v-else-if="plantDetailError" class="py-4 text-center text-red-500">
+        Gagal memuat detail tanaman: {{ plantDetailError.message || 'Error tidak diketahui' }}
+      </div>
+      <div v-else class="py-4 text-center text-gray-500">
+        Tidak ada data tanaman untuk diedit atau tanaman tidak ditemukan.
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -111,11 +134,20 @@ const runtimeConfig = useRuntimeConfig();
 const plantsStore = usePlantsStore();
 
 // Reactive state from the store
-const { plantList, plantsListPending, plantsListError, currentPage, totalPages } = storeToRefs(plantsStore);
+const { 
+  plantList, plantsListPending, plantsListError, 
+  currentPage, totalPages, 
+  plantDetail, plantDetailPending, plantDetailError,
+  // plantUpdatePending, plantUpdateError // These are usually handled within the form or store action, not directly watched by page
+} = storeToRefs(plantsStore);
 
 // Local state for the search query
 const searchQuery = ref(plantsStore.searchText || ''); // Initialize with store's search text
 const showCreateModal = ref(false);
+
+// State for Edit Modal
+const showEditModal = ref(false);
+const editingPlant = ref<any | null>(null); // Using 'any' for now, ideally a Plant interface
 
 const tableDisplayColumns = [
   { key: 'gambar', label: 'Gambar' },
@@ -199,11 +231,58 @@ async function handleCreatePlant(formData: any) {
 }
 
 // Placeholder for actual Edit/Delete handlers
-const handleEdit = (id: number | string) => {
-  console.log('Edit plant with id:', id);
-  // Implementation for editing will go here (e.g., show modal with form, navigate to edit page)
-  alert(`Placeholder: Edit plant ID ${id}`);
-};
+async function handleEdit(plantId: number | string) {
+  // plantsStore.resetPlantDetail(); // Optional: reset detail state before fetching new one
+  try {
+    await plantsStore.fetchPlantDetail(plantId); // This action sets plantDetail, plantDetailPending, plantDetailError in store
+    
+    if (plantDetail.value && !plantDetailError.value) { 
+      editingPlant.value = { ...plantDetail.value }; // Create a shallow copy for local editing state
+      showEditModal.value = true;
+    } else if (plantDetailError.value) {
+      // Error is already set in the store by fetchPlantDetail
+      console.error(`Error fetching plant detail for ID ${plantId}:`, plantDetailError.value);
+      alert(`Gagal mengambil detail tanaman: ${plantDetailError.value.message || 'Error tidak diketahui'}`);
+    } else {
+      // This case means fetchPlantDetail resolved, but plantDetail is null (e.g., 404 not found)
+      alert(`Tanaman dengan ID ${plantId} tidak ditemukan.`);
+    }
+  } catch (error: any) { 
+    // This catch block is for unexpected errors from fetchPlantDetail itself if it re-throws
+    console.error(`Gagal memproses permintaan detail tanaman ${plantId}:`, error);
+    alert(`Gagal memproses permintaan detail tanaman: ${error.message || 'Error tidak diketahui'}`);
+  }
+  // plantDetailPending from store can be used directly in the template for loading states
+}
+
+async function handleUpdatePlant(formData: any) {
+  if (!editingPlant.value?.id) {
+    alert('Error: ID tanaman untuk diedit tidak ditemukan.');
+    return;
+  }
+  try {
+    // The store's updatePlant action will set its own pending/error states (plantUpdatePending, plantUpdateError)
+    await plantsStore.updatePlant(editingPlant.value.id, formData);
+    
+    showEditModal.value = false;
+    alert('Tanaman berhasil diupdate!');
+    await plantsStore.fetchPlants(); // Refresh the plant list
+    editingPlant.value = null; // Clear editing plant after update
+  } catch (error: any) {
+    console.error('Gagal mengupdate tanaman:', error.response?.data || error.message || error);
+    const errData = error.response?.data;
+    let alertMessage = 'Gagal mengupdate tanaman.';
+    if (errData && errData.message) {
+      alertMessage += ` Pesan: ${errData.message}`;
+    }
+    if (errData && errData.errors) {
+      const fieldErrors = Object.keys(errData.errors).map(key => `${key}: ${errData.errors[key].join(', ')}`).join('; ');
+      alertMessage += `\nDetails: ${fieldErrors}`;
+    }
+    alert(alertMessage);
+    // Optionally, do not clear editingPlant.value or close modal if user should retry.
+  }
+}
 
 const handleDelete = (id: number | string) => {
   console.log('Delete plant with id:', id);
