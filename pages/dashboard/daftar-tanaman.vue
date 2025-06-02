@@ -237,7 +237,14 @@ async function handleEdit(plantId: number | string) {
     await plantsStore.fetchPlantDetail(plantId); // This action sets plantDetail, plantDetailPending, plantDetailError in store
     
     if (plantDetail.value && !plantDetailError.value) { 
-      editingPlant.value = { ...plantDetail.value }; // Create a shallow copy for local editing state
+      const plantDataForEdit = { ...plantDetail.value };
+
+      // Check if 'gambar' exists and is a string (potential relative path)
+      if (plantDataForEdit.gambar && typeof plantDataForEdit.gambar === 'string') {
+        plantDataForEdit.gambar = getFullImageUrl(plantDataForEdit.gambar);
+      }
+      
+      editingPlant.value = plantDataForEdit;
       showEditModal.value = true;
     } else if (plantDetailError.value) {
       // Error is already set in the store by fetchPlantDetail
