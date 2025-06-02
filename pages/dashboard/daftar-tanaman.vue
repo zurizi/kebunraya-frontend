@@ -10,57 +10,65 @@
       </button>
     </div>
 
-    <div v-if="plantsListPending" class="py-4 text-center">
+    <!-- Search Input -->
+    <div class="mb-4">
+      <input
+        type="text"
+        v-model="searchQuery"
+        placeholder="Cari tanaman (nama lokal atau ilmiah)..."
+        class="w-full px-4 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:w-1/3"
+      />
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="plantsListPending && !plantList.length" class="py-4 text-center"> <!-- Show only if list is empty -->
       Memuat data tanaman...
     </div>
+    <!-- Error State -->
     <div v-else-if="plantsListError" class="py-4 text-center text-red-500">
       Gagal memuat data tanaman: {{ plantsListError.message || plantsListError }}
     </div>
-    <div v-else-if="plantList && plantList.length > 0">
-      <div class="mb-4">
-        <input
-          type="text"
-          v-model="searchQuery"
-          placeholder="Cari tanaman..."
-          class="w-full px-4 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:w-1/3"
-        />
-      </div>
+    <!-- Data Table and No Data States -->
+    <div v-else>
+      <div v-if="plantList && plantList.length > 0">
+        <BaseTable
+          :columns="tableDisplayColumns"
+          :data="plantList"
+        >
+          <!-- Custom Cell Slots -->
+          <template #gambar="{ row }">
+            <img
+              v-if="row.gambar"
+              :src="getFullImageUrl(row.gambar)"
+              alt="Tanaman"
+              class="object-cover w-20 h-10 rounded"
+            />
+            <span v-else>Tidak ada gambar</span>
+          </template>
+          <template #category="{ row }">
+            {{ row.category && row.category.nama_kategori ? row.category.nama_kategori : 'N/A' }}
+          </template>
+        </BaseTable>
 
-      <div v-if="filteredPlants.length === 0 && searchQuery" class="py-4 text-center">
-        Tidak ada tanaman yang cocok dengan pencarian "{{ searchQuery }}".
-      </div>
-      <BaseTable
-        v-else-if="filteredPlants.length > 0"
-        :columns="tableDisplayColumns"
-        :data="paginatedPlants"
-      >
-        <!-- Custom Cell Slots -->
-        <template #gambar="{ row }">
-          <img
-            v-if="row.gambar"
-            :src="getFullImageUrl(row.gambar)"
-            alt="Tanaman"
-            class="object-cover w-20 h-10 rounded"
+        <div v-if="totalPages > 1" class="flex justify-center mt-6">
+          <Pagination
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            @update:currentPage="handlePageChange($event)"
           />
-          <span v-else>Tidak ada gambar</span>
-        </template>
-
-        <template #category="{ row }">
-          {{ row.category && row.category.nama_kategori ? row.category.nama_kategori : 'N/A' }}
-        </template>
-      </BaseTable>
-      <div v-if="totalPagesLocal > 1" class="flex justify-center mt-6">
-        <Pagination
-          :current-page="currentPageLocal"
-          :total-pages="totalPagesLocal"
-          @update:currentPage="newPage => currentPageLocal = newPage"
-        />
+        </div>
+      </div>
+      <!-- No matching search results -->
+      <div v-else-if="plantList.length === 0 && plantsStore.searchText" class="py-4 text-center">
+        Tidak ada tanaman yang cocok dengan pencarian "{{ plantsStore.searchText }}".
+      </div>
+      <!-- No plants available at all -->
+      <div v-else class="py-4 text-center">
+        Tidak ada tanaman tersedia.
       </div>
     </div>
-    <div v-else class="py-4 text-center">
-      Tidak ada tanaman tersedia.
-    </div>
 
+    <!-- Modal for Creating Plant -->
     <Modal :show="showCreateModal" title="Tambah Tanaman Baru" @update:show="showCreateModal = $event" maxWidth="2xl">
       <PlantForm @submit="handleCreatePlant" @close="showCreateModal = false" />
     </Modal>
@@ -70,7 +78,8 @@
 <script setup lang="ts">
 import { usePlantsStore } from '~/store/plants';
 import { storeToRefs } from 'pinia';
-import { onMounted, ref, computed, watch } from 'vue';
+import { onMounted, ref } from 'vue';
+import { watchDebounced } from '@vueuse/core'; // Using @vueuse/core for debouncing
 import BaseTable from '~/components/Table/BaseTable.vue';
 import Pagination from '~/components/Pagination.vue';
 import { useRuntimeConfig } from "#app";
@@ -82,10 +91,13 @@ definePageMeta({
 });
 
 const runtimeConfig = useRuntimeConfig();
-const searchQuery = ref('');
-const currentPageLocal = ref(1);
-const itemsPerPage = ref(10); 
+const plantsStore = usePlantsStore();
 
+// Reactive state from the store
+const { plantList, plantsListPending, plantsListError, currentPage, totalPages } = storeToRefs(plantsStore);
+
+// Local state for the search query
+const searchQuery = ref(plantsStore.searchText || ''); // Initialize with store's search text
 const showCreateModal = ref(false);
 
 const tableDisplayColumns = ['gambar', 'nama_lokal', 'nama_ilmiah', 'category'];
@@ -98,51 +110,39 @@ const getFullImageUrl = (imagePath: string | null | undefined): string => {
   return `${runtimeConfig.public.imgURL || runtimeConfig.public.imageCDN}/${imagePath.startsWith('/') ? imagePath.substring(1) : imagePath}`;
 };
 
-const plantsStore = usePlantsStore();
-const { plantList, plantsListPending, plantsListError } = storeToRefs(plantsStore);
-
-const filteredPlants = computed(() => {
-  if (!plantList.value) {
-    return [];
-  }
-  const query = searchQuery.value ? searchQuery.value.toLowerCase() : '';
-  if (!query) {
-    return plantList.value;
-  }
-  return plantList.value.filter(plant => {
-    const namaLokalMatch = plant.nama_lokal && plant.nama_lokal.toLowerCase().includes(query);
-    const namaIlmiahMatch = plant.nama_ilmiah && plant.nama_ilmiah.toLowerCase().includes(query);
-    return namaLokalMatch || namaIlmiahMatch;
-  });
-});
-
-const totalPagesLocal = computed(() => {
-  if (!filteredPlants.value) return 1;
-  return Math.ceil(filteredPlants.value.length / itemsPerPage.value);
-});
-
-const paginatedPlants = computed(() => {
-  if (!filteredPlants.value) return [];
-  const start = (currentPageLocal.value - 1) * itemsPerPage.value;
-  const end = start + itemsPerPage.value;
-  return filteredPlants.value.slice(start, end);
-});
-
-watch(searchQuery, () => {
-  currentPageLocal.value = 1;
-});
-
+// Fetch initial data when component is mounted
 onMounted(() => {
-  plantsStore.currentPage = 1; 
-  plantsStore.searchText = ''; 
+  // If there's an existing search query in the store, respect it, otherwise fetch all.
+  // currentPage will also be respected if already set in store (e.g. from previous navigation)
+  // plantsStore.currentPage = 1; // Optionally reset to page 1 on every mount
   plantsStore.fetchPlants();
 });
 
+// Search functionality
+function performSearch() {
+  plantsStore.searchText = searchQuery.value;
+  plantsStore.currentPage = 1; // Reset to page 1 for new search
+  plantsStore.fetchPlants();
+}
+
+// Watch for changes in searchQuery and trigger search with debounce
+watchDebounced(searchQuery, () => {
+  performSearch();
+}, { debounce: 500, maxWait: 1000 }); // Adjust timing as needed
+
+// Handle page changes from Pagination component
+function handlePageChange(newPage: number) {
+  plantsStore.currentPage = newPage;
+  plantsStore.fetchPlants();
+}
+
+// Handle plant creation
 async function handleCreatePlant(formData: any) {
   try {
     await plantsStore.createPlant(formData);
     showCreateModal.value = false;
     alert('Tanaman berhasil ditambahkan!');
+    // Fetch plants, which should now include the new one and respect current page/filters
     await plantsStore.fetchPlants(); 
   } catch (error: any) {
     console.error('Gagal menambahkan tanaman:', error.response?.data || error.message || error);
