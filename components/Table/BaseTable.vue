@@ -14,10 +14,10 @@ const props = defineProps({
         <tr class="text-gray-600 bg-gray-100">
           <th
             v-for="col in columns"
-            :key="col"
+            :key="col.key"
             class="px-6 py-4 text-sm font-semibold tracking-wider uppercase border-b-lg"
           >
-            {{ col }}
+            {{ col.label }}
           </th>
         </tr>
       </thead>
@@ -30,10 +30,10 @@ const props = defineProps({
         >
           <td
             v-for="col in columns"
-            :key="col"
+            :key="col.key"
             class="px-6 py-2 text-sm text-black"
           >
-            <slot :name="col" v-bind="{ row, index }">{{ row[col] }}</slot>
+            <slot :name="col.key" v-bind="{ row, index }">{{ row[col.key] }}</slot>
           </td>
         </tr>
       </tbody>

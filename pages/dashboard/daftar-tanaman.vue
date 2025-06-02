@@ -117,7 +117,13 @@ const { plantList, plantsListPending, plantsListError, currentPage, totalPages }
 const searchQuery = ref(plantsStore.searchText || ''); // Initialize with store's search text
 const showCreateModal = ref(false);
 
-const tableDisplayColumns = ['gambar', 'nama_lokal', 'nama_ilmiah', 'category', 'actions'];
+const tableDisplayColumns = [
+  { key: 'gambar', label: 'Gambar' },
+  { key: 'nama_lokal', label: 'Nama Lokal' },
+  { key: 'nama_ilmiah', label: 'Nama Ilmiah' },
+  { key: 'category', label: 'Kategori' },
+  { key: 'actions', label: 'Aksi' }
+];
 
 const getFullImageUrl = (imagePath: string | null | undefined): string => {
   if (!imagePath) return ''; 

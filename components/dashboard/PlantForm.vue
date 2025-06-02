@@ -55,7 +55,16 @@
 
       <div>
         <label for="gambar" class="block text-sm font-medium text-gray-700">Gambar</label>
-        <input type="file" id="gambar" @change="handleFileUpload" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+        <input 
+          type="file" 
+          id="gambar" 
+          @change="handleImageChange" 
+          accept="image/png, image/jpeg, image/gif" 
+          class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+        >
+        <div v-if="imagePreviewUrl" class="mt-2">
+          <img :src="imagePreviewUrl" alt="Preview Gambar Tanaman" class="max-h-40 w-auto rounded border p-1 shadow-sm" />
+        </div>
       </div>
     </div>
 
@@ -71,7 +80,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted } from 'vue';
+import { reactive, onMounted, ref, onUnmounted } from 'vue'; // Added ref, onUnmounted
 import { useCategoriesStore } from '~/store/categories';
 import { storeToRefs } from 'pinia';
 
@@ -79,6 +88,8 @@ const emit = defineEmits(['submit']);
 
 const categoriesStore = useCategoriesStore();
 const { categoryList, categoryListPending, categoryListError } = storeToRefs(categoriesStore);
+
+const imagePreviewUrl = ref(null); // Added for image preview
 
 const formData = reactive({
   nama_ilmiah: '',
@@ -96,12 +107,29 @@ onMounted(() => {
   categoriesStore.fetchCategories();
 });
 
-const handleFileUpload = (event) => {
-  const file = event.target.files[0];
+const handleImageChange = (event) => {
+  const target = event.target;
+  const file = target.files?.[0];
+
+  if (imagePreviewUrl.value) {
+    URL.revokeObjectURL(imagePreviewUrl.value);
+    imagePreviewUrl.value = null;
+  }
+
   if (file) {
-    formData.gambar = file;
+    formData.gambar = file; // Correctly accessing reactive formData
+    imagePreviewUrl.value = URL.createObjectURL(file);
+  } else {
+    formData.gambar = null; // Ensure formData.gambar is also cleared
   }
 };
+
+// Cleanup object URL on component unmount
+onUnmounted(() => {
+  if (imagePreviewUrl.value) {
+    URL.revokeObjectURL(imagePreviewUrl.value);
+  }
+});
 
 const handleSubmit = () => {
   emit('submit', formData);
