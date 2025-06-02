@@ -48,9 +48,15 @@ export const usePlantsStore = defineStore("plants", () => {
         response.data.data
       ) {
         // Update total plants count
-        if (response.data.data && typeof response.data.data.total === 'number') {
+        if (
+          response.data.data &&
+          typeof response.data.data.total === "number"
+        ) {
           totalPlantsCount.value = response.data.data.total;
-        } else if (response.data.meta && typeof response.data.meta.total === 'number') {
+        } else if (
+          response.data.meta &&
+          typeof response.data.meta.total === "number"
+        ) {
           totalPlantsCount.value = response.data.meta.total;
         }
         // Removed the 'else if Array.isArray(response.data.data)' for totalPlantsCount
@@ -98,7 +104,7 @@ export const usePlantsStore = defineStore("plants", () => {
         );
         plantList.value = [];
         totalPages.value = 1;
-        plantsListError.value = null; 
+        plantsListError.value = null;
       }
     } finally {
       plantsListPending.value = false;
@@ -108,7 +114,7 @@ export const usePlantsStore = defineStore("plants", () => {
   async function fetchPlantDetail(id: string) {
     plantDetailPending.value = true;
     plantDetailError.value = null;
-    plantDetail.value = null; 
+    plantDetail.value = null;
     try {
       const response = await $api.get(`/plants/${id}`);
       if (
@@ -213,9 +219,13 @@ export const usePlantsStore = defineStore("plants", () => {
     const formData = new FormData();
     for (const key in plantData) {
       if (plantData.hasOwnProperty(key)) {
-        if (key === 'gambar' && plantData[key] instanceof File) {
+        if (key === "gambar" && plantData[key] instanceof File) {
           formData.append(key, plantData[key], plantData[key].name);
-        } else if (plantData[key] !== null && plantData[key] !== undefined && plantData[key] !== '') {
+        } else if (
+          plantData[key] !== null &&
+          plantData[key] !== undefined &&
+          plantData[key] !== ""
+        ) {
           formData.append(key, plantData[key]);
         }
       }
@@ -223,15 +233,18 @@ export const usePlantsStore = defineStore("plants", () => {
 
     try {
       const response = await $api.post("/plants", formData, {
-        // headers: { // $api service should ideally handle this for FormData
-        //   'Content-Type': 'multipart/form-data', 
-        // },
+        headers: { // $api service should ideally handle this for FormData
+          'Content-Type': 'multipart/form-data',
+        },
       });
       // Optionally, refresh plants list or handle success (e.g., show notification)
       // await fetchPlants(); // Example: uncomment to refresh list after creation
       return response.data;
     } catch (err: any) {
-      console.error("[Plants Store] Gagal membuat tanaman:", err.response?.data || err.message || err);
+      console.error(
+        "[Plants Store] Gagal membuat tanaman:",
+        err.response?.data || err.message || err
+      );
       plantCreateError.value = err.response?.data || err.message || err;
       throw err; // Rethrow to be caught by the calling component
     } finally {
@@ -247,13 +260,17 @@ export const usePlantsStore = defineStore("plants", () => {
 
     for (const key in plantData) {
       if (plantData.hasOwnProperty(key)) {
-        if (key === 'gambar') {
+        if (key === "gambar") {
           if (plantData.gambar instanceof File) {
-            formData.append('gambar', plantData.gambar);
+            formData.append("gambar", plantData.gambar);
           }
-        } else if (plantData[key] !== null && plantData[key] !== undefined && plantData[key] !== '') {
+        } else if (
+          plantData[key] !== null &&
+          plantData[key] !== undefined &&
+          plantData[key] !== ""
+        ) {
           // Ensure category_id is not empty string, convert to null if it is, or handle as needed by backend
-          if (key === 'category_id' && plantData[key] === '') {
+          if (key === "category_id" && plantData[key] === "") {
             // If backend expects null for empty category_id, or if it should be omitted
             // formData.append(key, null); // This might not work as expected with FormData
             // Or simply don't append if backend handles omitted field as no change or error
@@ -263,26 +280,31 @@ export const usePlantsStore = defineStore("plants", () => {
             // Let's refine to not send empty string for category_id if it's meant to be optional or cleared.
             // However, the PlantForm requires category_id, so it shouldn't be empty during update
             // unless the requirement changes. Sticking to provided logic:
-             formData.append(key, plantData[key]);
+            formData.append(key, plantData[key]);
           } else {
             formData.append(key, plantData[key]);
           }
         }
       }
     }
-    
+
     // Backend might expect PUT for updates, but many PHP frameworks (like Laravel)
     // listen for POST with a _method field to simulate PUT for FormData.
     // formData.append('_method', 'PUT'); // Uncomment if backend (e.g. Laravel) needs this for FormData updates
 
     try {
       const response = await $api.post(`/plants/${plantId}`, formData, {
-        // Axios (which $api likely wraps) sets Content-Type to multipart/form-data
-        // automatically when FormData is used as the body.
+        headers: {
+          // $api service should ideally handle this for FormData
+          "Content-Type": "multipart/form-data",
+        },
       });
       return response.data;
     } catch (err: any) {
-      console.error(`[Plants Store] Failed to update plant ${plantId}:`, err.response?.data || err.message || err);
+      console.error(
+        `[Plants Store] Failed to update plant ${plantId}:`,
+        err.response?.data || err.message || err
+      );
       plantUpdateError.value = err.response?.data || err;
       throw err;
     } finally {
