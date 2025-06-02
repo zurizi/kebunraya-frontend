@@ -21,6 +21,10 @@ export const usePlantsStore = defineStore("plants", () => {
   const plantDetailPending = ref(false);
   const plantDetailError = ref(null);
 
+  // State untuk pembuatan tanaman
+  const plantCreatePending = ref(false);
+  const plantCreateError = ref<any | null>(null);
+
   async function fetchPlants() {
     plantsListPending.value = true;
     plantsListError.value = null;
@@ -171,5 +175,44 @@ export const usePlantsStore = defineStore("plants", () => {
     // category
     categoryId,
     resetCategory,
+
+    // Create plant
+    plantCreatePending,
+    plantCreateError,
+    createPlant,
   };
+
+  async function createPlant(plantData: any) {
+    // const { $api } = useNuxtApp(); // $api is already available from the outer scope
+    plantCreatePending.value = true;
+    plantCreateError.value = null;
+
+    const formData = new FormData();
+    for (const key in plantData) {
+      if (plantData.hasOwnProperty(key)) {
+        if (key === 'gambar' && plantData[key] instanceof File) {
+          formData.append(key, plantData[key], plantData[key].name);
+        } else if (plantData[key] !== null && plantData[key] !== undefined && plantData[key] !== '') {
+          formData.append(key, plantData[key]);
+        }
+      }
+    }
+
+    try {
+      const response = await $api.post("/plants", formData, {
+        // headers: { // $api service should ideally handle this for FormData
+        //   'Content-Type': 'multipart/form-data', 
+        // },
+      });
+      // Optionally, refresh plants list or handle success (e.g., show notification)
+      // await fetchPlants(); // Example: uncomment to refresh list after creation
+      return response.data;
+    } catch (err: any) {
+      console.error("[Plants Store] Gagal membuat tanaman:", err.response?.data || err.message || err);
+      plantCreateError.value = err.response?.data || err.message || err;
+      throw err; // Rethrow to be caught by the calling component
+    } finally {
+      plantCreatePending.value = false;
+    }
+  }
 });
