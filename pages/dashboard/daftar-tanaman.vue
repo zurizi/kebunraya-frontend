@@ -48,6 +48,24 @@
           <template #category="{ row }">
             {{ row.category && row.category.nama_kategori ? row.category.nama_kategori : 'N/A' }}
           </template>
+
+          <!-- New Slot for Actions -->
+          <template #actions="{ row }">
+            <div class="flex items-center space-x-2">
+              <button
+                @click="handleEdit(row.id)"
+                class="px-3 py-1 text-xs font-medium text-black bg-yellow-400 rounded shadow-sm hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-1"
+              >
+                Edit
+              </button>
+              <button
+                @click="handleDelete(row.id)"
+                class="px-3 py-1 text-xs font-medium text-white bg-red-600 rounded shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+              >
+                Hapus
+              </button>
+            </div>
+          </template>
         </BaseTable>
 
         <div v-if="totalPages > 1" class="flex justify-center mt-6">
@@ -99,7 +117,7 @@ const { plantList, plantsListPending, plantsListError, currentPage, totalPages }
 const searchQuery = ref(plantsStore.searchText || ''); // Initialize with store's search text
 const showCreateModal = ref(false);
 
-const tableDisplayColumns = ['gambar', 'nama_lokal', 'nama_ilmiah', 'category'];
+const tableDisplayColumns = ['gambar', 'nama_lokal', 'nama_ilmiah', 'category', 'actions'];
 
 const getFullImageUrl = (imagePath: string | null | undefined): string => {
   if (!imagePath) return ''; 
@@ -173,6 +191,22 @@ async function handleCreatePlant(formData: any) {
     }
   }
 }
+
+// Placeholder for actual Edit/Delete handlers
+const handleEdit = (id: number | string) => {
+  console.log('Edit plant with id:', id);
+  // Implementation for editing will go here (e.g., show modal with form, navigate to edit page)
+  alert(`Placeholder: Edit plant ID ${id}`);
+};
+
+const handleDelete = (id: number | string) => {
+  console.log('Delete plant with id:', id);
+  // Implementation for deleting will go here (e.g., show confirmation, call store action)
+  if (confirm(`Apakah Anda yakin ingin menghapus tanaman dengan ID ${id}?`)) {
+    alert(`Placeholder: Delete plant ID ${id} confirmed`);
+    // plantsStore.deletePlant(id).then(...).catch(...);
+  }
+};
 </script>
 
 <style scoped>
