@@ -26,12 +26,12 @@
         </h6>
         <div class="flex space-x-4">
           <nuxt-link to="/konservasi">
-            <BaseButton color="green-900" width="auto" addClass="px-6 ">
+            <BaseButton color="green" width="auto" addClass="px-6 ">
               Jelajahi Kebun Raya
             </BaseButton>
           </nuxt-link>
           <nuxt-link to="/maps">
-            <BaseButton color="green-900" width="auto" addClass="px-6 ">
+            <BaseButton color="green" width="auto" addClass="px-6 ">
               Lihat Peta Lokasi
             </BaseButton>
           </nuxt-link>

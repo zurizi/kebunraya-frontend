@@ -115,8 +115,7 @@
             <BaseButton
               width="auto"
               addClass="px-6 text-xs px-12 md:px-16"
-              variant="outline"
-              color="white"
+              color="green"
               >Login</BaseButton
             >
           </nuxt-link>
