@@ -23,15 +23,12 @@ export const usePlantsStore = defineStore("plants", () => {
   const plantDetailError = ref(null);
 
   // State untuk pembuatan tanaman
-  const plantCreatePending = ref(false);
   const plantCreateError = ref<any | null>(null);
 
   // State untuk pembaruan tanaman
-  const plantUpdatePending = ref(false);
   const plantUpdateError = ref<any | null>(null);
 
   // State untuk penghapusan tanaman
-  const plantDeletePending = ref(false);
   const plantDeleteError = ref<any | null>(null);
 
   async function fetchPlants() {
@@ -205,24 +202,20 @@ export const usePlantsStore = defineStore("plants", () => {
     resetCategory,
 
     // Create plant
-    plantCreatePending,
     plantCreateError,
     createPlant,
 
     // Update plant
-    plantUpdatePending,
     plantUpdateError,
     updatePlant,
 
     // Delete plant
-    plantDeletePending,
     plantDeleteError,
     deletePlant,
   };
 
   async function createPlant(plantData: any) {
     // const { $api } = useNuxtApp(); // $api is already available from the outer scope
-    plantCreatePending.value = true;
     plantCreateError.value = null;
 
     const formData = new FormData();
@@ -256,13 +249,10 @@ export const usePlantsStore = defineStore("plants", () => {
       );
       plantCreateError.value = err.response?.data || err.message || err;
       throw err; // Rethrow to be caught by the calling component
-    } finally {
-      plantCreatePending.value = false;
     }
   }
 
   async function updatePlant(plantId: string | number, plantData: any) {
-    plantUpdatePending.value = true;
     plantUpdateError.value = null;
 
     const formData = new FormData();
@@ -316,13 +306,10 @@ export const usePlantsStore = defineStore("plants", () => {
       );
       plantUpdateError.value = err.response?.data || err;
       throw err;
-    } finally {
-      plantUpdatePending.value = false;
     }
   }
 
   async function deletePlant(plantId: string | number) {
-    plantDeletePending.value = true;
     plantDeleteError.value = null;
     try {
       const response = await $api.delete(`/plants/${plantId}`);
@@ -334,8 +321,6 @@ export const usePlantsStore = defineStore("plants", () => {
       );
       plantDeleteError.value = err.response?.data || err;
       throw err; // Rethrow to be caught by the calling component
-    } finally {
-      plantDeletePending.value = false;
     }
   }
 });

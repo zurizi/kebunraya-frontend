@@ -49,12 +49,14 @@
         <slot />
       </main>
     </div>
+    <GlobalLoadingIndicator /> <!-- Add this line -->
   </div>
 </template>
 
 <script setup lang="ts">
 import { navigateTo } from "#app";
 import { useAuthStore } from "@/store/auth";
+import GlobalLoadingIndicator from '~/components/GlobalLoadingIndicator.vue'; // Add this import
 const authStore = useAuthStore();
 import { useNuxtApp } from "#app";
 import { ref } from 'vue';
