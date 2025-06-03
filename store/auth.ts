@@ -3,8 +3,6 @@ import { ref, computed } from "vue";
 import { useNuxtApp } from "#app";
 
 export const useAuthStore = defineStore("auth", () => {
-  const { $api } = useNuxtApp();
-
   const token = ref(null);
   const user = ref(null);
   const isLoading = ref(false);
@@ -13,6 +11,7 @@ export const useAuthStore = defineStore("auth", () => {
   const isAuthenticated = computed(() => !!token.value);
 
   const login = async (payload) => {
+    const { $api } = useNuxtApp();
     isLoading.value = true;
     error.value = null;
     token.value = null;
@@ -64,6 +63,7 @@ export const useAuthStore = defineStore("auth", () => {
   };
 
   const logout = async () => {
+    const { $api } = useNuxtApp();
     isLoading.value = true;
     error.value = null;
     try {
