@@ -42,6 +42,7 @@
           <nav class="space-y-2">
             <NuxtLink to="/dashboard" class="sidebar-link" @click="isSidebarOpen = false">Dashboard</NuxtLink>
             <NuxtLink to="/dashboard/daftar-tanaman" class="sidebar-link" @click="isSidebarOpen = false">Daftar Tanaman</NuxtLink>
+            <NuxtLink to="/dashboard/daftar-kegiatan" class="sidebar-link" @click="isSidebarOpen = false">Daftar Kegiatan</NuxtLink> <!-- Add this line -->
           </nav>
         </div>
       </aside>

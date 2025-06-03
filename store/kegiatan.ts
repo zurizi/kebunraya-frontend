@@ -1,85 +1,135 @@
-// stores/kegiatan.ts
-import { defineStore } from 'pinia';
-import { useNuxtApp } from '#app';
-import { ref } from 'vue';
+// store/kegiatan.ts
+import { defineStore } from "pinia";
+import { useNuxtApp } from "#app";
+import { ref } from "vue";
 
-export const useKegiatanStore = defineStore('kegiatan', () => {
+export const useKegiatanStore = defineStore("kegiatan", () => {
   const { $api } = useNuxtApp();
 
-  // State untuk daftar kegiatan
   const kegiatanList = ref<any[]>([]);
-  const pendingList = ref(false);
-  const errorList = ref(null);
+  const kegiatanListPending = ref(false);
+  const kegiatanListError = ref<any | null>(null);
   const currentPage = ref(1);
   const totalPages = ref(1);
-  const searchText = ref('');
+  const totalKegiatanCount = ref(0);
+  const searchText = ref("");
 
-  // State untuk detail kegiatan
   const kegiatanDetail = ref<any | null>(null);
-  const pendingDetail = ref(false);
-  const errorDetail = ref(null);
+  const kegiatanDetailPending = ref(false);
+  const kegiatanDetailError = ref<any | null>(null);
+
+  const kegiatanCreateError = ref<any | null>(null);
+  const kegiatanUpdateError = ref<any | null>(null);
+  const kegiatanDeleteError = ref<any | null>(null);
 
   async function fetchKegiatanList() {
-    pendingList.value = true;
-    errorList.value = null;
+    kegiatanListPending.value = true;
+    kegiatanListError.value = null;
     try {
-      const response = await $api.get('/kegiatan', {
+      const response = await $api.get("/kegiatan", {
         params: {
           page: currentPage.value,
           search: searchText.value,
         },
       });
 
-      if (
-        response.data &&
-        response.data.status === 'success' &&
-        Array.isArray(response.data.data.data) &&
-        response.data.data.last_page !== undefined
-      ) {
-        kegiatanList.value = response.data.data.data;
-        totalPages.value = response.data.data.last_page;
+      if (response.data && response.data.status === "success" && response.data.data) {
+        const responseData = response.data.data;
+        if (Array.isArray(responseData.data) && responseData.last_page !== undefined) {
+          kegiatanList.value = responseData.data;
+          totalPages.value = responseData.last_page;
+          totalKegiatanCount.value = responseData.total || 0;
+        } else {
+          console.error("[Kegiatan Store] Invalid API response structure for list:", responseData);
+          kegiatanList.value = [];
+          totalPages.value = 1;
+          totalKegiatanCount.value = 0;
+        }
       } else {
-        console.error('[Kegiatan Store] Struktur respons API daftar kegiatan tidak sesuai:', response.data);
+        console.error("[Kegiatan Store] API request failed or invalid structure:", response.data);
         kegiatanList.value = [];
         totalPages.value = 1;
+        totalKegiatanCount.value = 0;
       }
     } catch (err: any) {
-      console.error('[Kegiatan Store] Gagal mengambil data daftar kegiatan:', err);
-      errorList.value = err;
+      console.error("[Kegiatan Store] Failed to fetch list:", err);
+      kegiatanListError.value = err;
       kegiatanList.value = [];
       totalPages.value = 1;
+      totalKegiatanCount.value = 0;
       if (err.response && err.response.status === 404) {
-        console.log('[Kegiatan Store] 404: Tidak ada kegiatan ditemukan untuk kueri saat ini.');
-        kegiatanList.value = [];
-        totalPages.value = 1;
-        errorList.value = null; // Reset error untuk kasus tidak ada data
+        kegiatanListError.value = null; // Treat 404 as empty list
       }
     } finally {
-      pendingList.value = false;
+      kegiatanListPending.value = false;
     }
   }
 
-  async function fetchKegiatanDetail(id: string) {
-    pendingDetail.value = true;
-    errorDetail.value = null;
-    kegiatanDetail.value = null; // Reset detail sebelum fetching baru
+  async function fetchKegiatanDetail(id: string | number) {
+    kegiatanDetailPending.value = true;
+    kegiatanDetailError.value = null;
+    kegiatanDetail.value = null;
     try {
       const response = await $api.get(`/kegiatan/${id}`);
-      if (response.data && response.data.status === 'success' && response.data.data) {
+      if (response.data && response.data.status === "success" && response.data.data) {
         kegiatanDetail.value = response.data.data;
       } else {
-        console.error('[Kegiatan Store] Struktur respons API detail kegiatan tidak sesuai:', response.data);
-        kegiatanDetail.value = null;
+        console.error("[Kegiatan Store] Invalid API response structure for detail:", response.data);
       }
     } catch (err: any) {
-      console.error(`[Kegiatan Store] Gagal mengambil detail kegiatan dengan ID ${id}:`, err);
-      errorDetail.value = err;
-      kegiatanDetail.value = null;
+      console.error(`[Kegiatan Store] Failed to fetch detail for ID ${id}:`, err);
+      kegiatanDetailError.value = err;
       if (err.response && err.response.status === 404) {
-        console.log(`[Kegiatan Store] 404: Detail kegiatan dengan ID ${id} tidak ditemukan.`);
+         kegiatanDetailError.value = { message: `Kegiatan with ID ${id} not found.`, status: 404 };
       }
     } finally {
-      pendingDetail.value = false;
+      kegiatanDetailPending.value = false;
+    }
+  }
+
+  function resetKegiatanDetail() {
+    kegiatanDetail.value = null;
+    kegiatanDetailError.value = null;
+    kegiatanDetailPending.value = false;
+  }
+
+  async function createKegiatan(kegiatanData: FormData) {
+    kegiatanCreateError.value = null;
+    try {
+      const response = await $api.post("/kegiatan", kegiatanData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } catch (err: any) {
+      console.error("[Kegiatan Store] Failed to create kegiatan:", err.response?.data || err.message || err);
+      kegiatanCreateError.value = err.response?.data || { message: err.message };
+      throw err;
+    }
+  }
+
+  async function updateKegiatan(id: string | number, kegiatanData: FormData) {
+    kegiatanUpdateError.value = null;
+    try {
+      const response = await $api.post(`/kegiatan/${id}`, kegiatanData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } catch (err: any) {
+      console.error(`[Kegiatan Store] Failed to update kegiatan ${id}:`, err.response?.data || err.message || err);
+      kegiatanUpdateError.value = err.response?.data || { message: err.message };
+      throw err;
+    }
+  }
+
+  async function deleteKegiatan(id: string | number) {
+    kegiatanDeleteError.value = null;
+    try {
+      const response = await $api.delete(`/kegiatan/${id}`);
+      return response.data;
+    } catch (err: any) {
+      console.error(`[Kegiatan Store] Failed to delete kegiatan ${id}:`, err.response?.data || err.message || err);
+      kegiatanDeleteError.value = err.response?.data || { message: err.message };
+      throw err;
     }
   }
 
@@ -87,50 +137,38 @@ export const useKegiatanStore = defineStore('kegiatan', () => {
     if (page >= 1 && page <= totalPages.value) {
       currentPage.value = page;
       fetchKegiatanList();
-    } else {
-      console.warn(`[Kegiatan Store] Mencoba mengatur halaman di luar batas: ${page}`);
     }
   }
 
-  function setSearchText(text: string) {
-    searchText.value = text;
-    currentPage.value = 1; // Reset ke halaman pertama saat mencari
+  function setSearchQuery(query: string) {
+    searchText.value = query;
+    currentPage.value = 1;
     fetchKegiatanList();
   }
 
-  function resetStateList() {
-    currentPage.value = 1;
-    searchText.value = '';
-    kegiatanList.value = [];
-    totalPages.value = 1;
-    pendingList.value = false;
-    errorList.value = null;
-  }
-
-  function resetStateDetail() {
-    kegiatanDetail.value = null;
-    pendingDetail.value = false;
-    errorDetail.value = null;
-  }
-
   return {
-    // State dan actions untuk daftar kegiatan
     kegiatanList,
-    pendingList,
-    errorList,
+    kegiatanListPending,
+    kegiatanListError,
     currentPage,
     totalPages,
+    totalKegiatanCount,
     searchText,
     fetchKegiatanList,
     updatePage,
-    setSearchText,
-    resetStateList,
+    setSearchQuery,
 
-    // State dan actions untuk detail kegiatan
     kegiatanDetail,
-    pendingDetail,
-    errorDetail,
+    kegiatanDetailPending,
+    kegiatanDetailError,
     fetchKegiatanDetail,
-    resetStateDetail,
+    resetKegiatanDetail,
+
+    createKegiatan,
+    kegiatanCreateError,
+    updateKegiatan,
+    kegiatanUpdateError,
+    deleteKegiatan,
+    kegiatanDeleteError,
   };
 });
