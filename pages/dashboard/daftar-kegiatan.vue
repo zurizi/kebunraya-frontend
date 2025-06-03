@@ -83,7 +83,6 @@
       <KegiatanForm
         @submit="handleCreateKegiatan"
         @close="showCreateModal = false"
-        :errors="kegiatanCreateError?.errors"
       />
     </Modal>
 
@@ -101,7 +100,6 @@
         :initialData="editingKegiatan"
         @submit="handleUpdateKegiatan"
         @close="showEditModal = false"
-        :errors="kegiatanUpdateError?.errors"
       />
       <div v-else-if="kegiatanDetailError" class="py-4 text-center text-red-500">
         Gagal memuat detail kegiatan: {{ kegiatanDetailError.message || 'Error tidak diketahui' }}

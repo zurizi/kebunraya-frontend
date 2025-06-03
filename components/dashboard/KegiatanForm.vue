@@ -9,7 +9,6 @@
         required
         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
       />
-      <p v-if="errors.judul" class="mt-2 text-sm text-red-600">{{ errors.judul.join(', ') }}</p>
     </div>
 
     <div>
@@ -21,7 +20,6 @@
         required
         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
       />
-      <p v-if="errors.tanggal" class="mt-2 text-sm text-red-600">{{ errors.tanggal.join(', ') }}</p>
     </div>
 
     <div>
@@ -33,7 +31,6 @@
         required
         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
       />
-      <p v-if="errors.lokasi" class="mt-2 text-sm text-red-600">{{ errors.lokasi.join(', ') }}</p>
     </div>
 
     <div>
@@ -45,7 +42,6 @@
         required
         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
       ></textarea>
-      <p v-if="errors.deskripsi" class="mt-2 text-sm text-red-600">{{ errors.deskripsi.join(', ') }}</p>
     </div>
 
     <div>
@@ -56,7 +52,6 @@
         @change="handleFileUpload"
         class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
       />
-      <p v-if="errors.gambar" class="mt-2 text-sm text-red-600">{{ errors.gambar.join(', ') }}</p>
       <img v-if="imagePreviewUrl && !form.gambar" :src="imagePreviewUrl" alt="Preview" class="mt-2 h-32 w-auto object-cover rounded-md"/>
       <img v-if="form.gambar && typeof form.gambar !== 'string'" :src="newImagePreview" alt="New Preview" class="mt-2 h-32 w-auto object-cover rounded-md"/>
     </div>
@@ -95,7 +90,6 @@ interface FormDataType {
 interface Props {
   isEditMode?: boolean;
   initialData?: any; // Define a more specific type if possible
-  errors?: Record<string, string[]>;
   isSubmitting?: boolean;
 }
 
