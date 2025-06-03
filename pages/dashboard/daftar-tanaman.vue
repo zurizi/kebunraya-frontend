@@ -122,7 +122,7 @@ import { storeToRefs } from 'pinia';
 import { onMounted, ref, watch } from 'vue'; // Added watch, removed watchDebounced
 import BaseTable from '~/components/Table/BaseTable.vue';
 import Pagination from '~/components/Pagination.vue';
-import { useRuntimeConfig } from "#app";
+import { useRuntimeConfig, useNuxtApp } from "#app"; // Add useNuxtApp
 import Modal from '~/components/Modal.vue';
 import PlantForm from '~/components/dashboard/PlantForm.vue';
 
@@ -132,6 +132,7 @@ definePageMeta({
 
 const runtimeConfig = useRuntimeConfig();
 const plantsStore = usePlantsStore();
+const nuxtApp = useNuxtApp(); // Get nuxtApp instance
 
 // Reactive state from the store
 const { 
@@ -214,19 +215,30 @@ async function handleCreatePlant(formData: any) {
   try {
     await plantsStore.createPlant(formData);
     showCreateModal.value = false;
-    alert('Tanaman berhasil ditambahkan!');
-    // Fetch plants, which should now include the new one and respect current page/filters
+    nuxtApp.$swal.fire( // Use SweetAlert for success
+      'Berhasil!',
+      'Tanaman berhasil ditambahkan.',
+      'success'
+    );
     await plantsStore.fetchPlants(); 
   } catch (error: any) {
     console.error('Gagal menambahkan tanaman:', error.response?.data || error.message || error);
-    const errorMessage = error.response?.data?.message || error.message || 'Terjadi kesalahan saat menambahkan tanaman.';
-    if (error.response?.data?.errors) {
-      const errors = error.response.data.errors;
-      const fieldErrors = Object.keys(errors).map(key => `${key}: ${errors[key].join(', ')}`).join('; ');
-      alert(`Gagal menambahkan tanaman: ${errorMessage}\nDetails: ${fieldErrors}`);
-    } else {
-      alert(`Gagal menambahkan tanaman: ${errorMessage}`);
+    let errorMessage = 'Terjadi kesalahan saat menambahkan tanaman.';
+    const errorData = error.response?.data;
+    if (errorData?.message) {
+      errorMessage = errorData.message;
     }
+
+    let errorDetails = '';
+    if (errorData?.errors) {
+      errorDetails = Object.values(errorData.errors).flat().join('<br>');
+    }
+
+    nuxtApp.$swal.fire( // Use SweetAlert for error
+      'Gagal!',
+      `${errorMessage}${errorDetails ? '<br><br>Details:<br>' + errorDetails : ''}`,
+      'error'
+    );
   }
 }
 
@@ -264,39 +276,80 @@ async function handleEdit(plantId: number | string) {
 
 async function handleUpdatePlant(formData: any) {
   if (!editingPlant.value?.id) {
-    alert('Error: ID tanaman untuk diedit tidak ditemukan.');
+    nuxtApp.$swal.fire( // Use SweetAlert for error
+      'Error!',
+      'ID tanaman untuk diedit tidak ditemukan.',
+      'error'
+    );
     return;
   }
   try {
-    // The store's updatePlant action will set its own pending/error states (plantUpdatePending, plantUpdateError)
     await plantsStore.updatePlant(editingPlant.value.id, formData);
-    
     showEditModal.value = false;
-    alert('Tanaman berhasil diupdate!');
-    await plantsStore.fetchPlants(); // Refresh the plant list
-    editingPlant.value = null; // Clear editing plant after update
+    nuxtApp.$swal.fire( // Use SweetAlert for success
+      'Berhasil!',
+      'Tanaman berhasil diupdate.',
+      'success'
+    );
+    await plantsStore.fetchPlants();
+    editingPlant.value = null;
   } catch (error: any) {
     console.error('Gagal mengupdate tanaman:', error.response?.data || error.message || error);
-    const errData = error.response?.data;
-    let alertMessage = 'Gagal mengupdate tanaman.';
-    if (errData && errData.message) {
-      alertMessage += ` Pesan: ${errData.message}`;
+    let errorMessage = 'Terjadi kesalahan saat mengupdate tanaman.';
+    const errorData = error.response?.data;
+    if (errorData?.message) {
+      errorMessage = errorData.message;
     }
-    if (errData && errData.errors) {
-      const fieldErrors = Object.keys(errData.errors).map(key => `${key}: ${errData.errors[key].join(', ')}`).join('; ');
-      alertMessage += `\nDetails: ${fieldErrors}`;
+
+    let errorDetails = '';
+    if (errorData?.errors) {
+      errorDetails = Object.values(errorData.errors).flat().join('<br>');
     }
-    alert(alertMessage);
+
+    nuxtApp.$swal.fire( // Use SweetAlert for error
+      'Gagal!',
+      `${errorMessage}${errorDetails ? '<br><br>Details:<br>' + errorDetails : ''}`,
+      'error'
+    );
     // Optionally, do not clear editingPlant.value or close modal if user should retry.
   }
 }
 
-const handleDelete = (id: number | string) => {
-  console.log('Delete plant with id:', id);
-  // Implementation for deleting will go here (e.g., show confirmation, call store action)
-  if (confirm(`Apakah Anda yakin ingin menghapus tanaman dengan ID ${id}?`)) {
-    alert(`Placeholder: Delete plant ID ${id} confirmed`);
-    // plantsStore.deletePlant(id).then(...).catch(...);
+const handleDelete = async (id: number | string) => {
+  try {
+    const result = await nuxtApp.$swal.fire({
+      title: 'Apakah Anda yakin?',
+      text: "Anda tidak akan dapat mengembalikan tindakan ini!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Ya, hapus!',
+      cancelButtonText: 'Batal',
+    });
+
+    if (result.isConfirmed) {
+      await plantsStore.deletePlant(id);
+      await plantsStore.fetchPlants(); // Refresh list
+      nuxtApp.$swal.fire(
+        'Dihapus!',
+        'Tanaman berhasil dihapus.',
+        'success'
+      );
+    }
+  } catch (error: any) {
+    console.error('Gagal menghapus tanaman:', error);
+    let errorMessage = 'Gagal menghapus tanaman.';
+    if (error.response?.data?.message) {
+      errorMessage += ` Pesan: ${error.response.data.message}`;
+    } else if (error.message) {
+      errorMessage += ` Pesan: ${error.message}`;
+    }
+    nuxtApp.$swal.fire(
+      'Error!',
+      errorMessage,
+      'error'
+    );
   }
 };
 </script>

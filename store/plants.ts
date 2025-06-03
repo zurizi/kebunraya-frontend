@@ -30,6 +30,10 @@ export const usePlantsStore = defineStore("plants", () => {
   const plantUpdatePending = ref(false);
   const plantUpdateError = ref<any | null>(null);
 
+  // State untuk penghapusan tanaman
+  const plantDeletePending = ref(false);
+  const plantDeleteError = ref<any | null>(null);
+
   async function fetchPlants() {
     plantsListPending.value = true;
     plantsListError.value = null;
@@ -209,6 +213,11 @@ export const usePlantsStore = defineStore("plants", () => {
     plantUpdatePending,
     plantUpdateError,
     updatePlant,
+
+    // Delete plant
+    plantDeletePending,
+    plantDeleteError,
+    deletePlant,
   };
 
   async function createPlant(plantData: any) {
@@ -309,6 +318,24 @@ export const usePlantsStore = defineStore("plants", () => {
       throw err;
     } finally {
       plantUpdatePending.value = false;
+    }
+  }
+
+  async function deletePlant(plantId: string | number) {
+    plantDeletePending.value = true;
+    plantDeleteError.value = null;
+    try {
+      const response = await $api.delete(`/plants/${plantId}`);
+      return response.data; // Return response data on success
+    } catch (err: any) {
+      console.error(
+        `[Plants Store] Failed to delete plant ${plantId}:`,
+        err.response?.data || err.message || err
+      );
+      plantDeleteError.value = err.response?.data || err;
+      throw err; // Rethrow to be caught by the calling component
+    } finally {
+      plantDeletePending.value = false;
     }
   }
 });
