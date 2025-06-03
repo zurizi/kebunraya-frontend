@@ -5,10 +5,14 @@
       <slot />
     </main>
     <Footer />
+    <GlobalLoadingIndicator /> <!-- Add this line -->
   </div>
 </template>
 
 <script setup lang="ts">
+import AppHeader from '~/components/AppHeader.vue';
+import Footer from '~/components/Footer.vue';
+import GlobalLoadingIndicator from '~/components/GlobalLoadingIndicator.vue'; // Add this import
 import { onMounted, ref } from "vue";
 import { useNuxtApp } from "#app";
 
