@@ -13,7 +13,7 @@ export const usePlantsStore = defineStore("plants", () => {
   const plantsListError = ref(null);
   const currentPage = ref(1);
   const totalPages = ref(1);
-  const totalPlantsCount = ref(0); // New state for total plants
+  const totalPlantsCount = ref(0);
   const searchText = ref("");
   const categoryId = ref("");
 
@@ -48,7 +48,6 @@ export const usePlantsStore = defineStore("plants", () => {
         response.data.status === "success" &&
         response.data.data
       ) {
-        // Update total plants count
         if (
           response.data.data &&
           typeof response.data.data.total === "number"
@@ -60,11 +59,6 @@ export const usePlantsStore = defineStore("plants", () => {
         ) {
           totalPlantsCount.value = response.data.meta.total;
         }
-        // Removed the 'else if Array.isArray(response.data.data)' for totalPlantsCount
-        // as it's less reliable if pagination is always expected to provide a 'total'.
-        // If no specific total field is found, totalPlantsCount will remain its previous value or 0.
-
-        // Process plant list and total pages for pagination
         if (
           Array.isArray(response.data.data.data) &&
           response.data.data.last_page !== undefined
@@ -72,13 +66,12 @@ export const usePlantsStore = defineStore("plants", () => {
           plantList.value = response.data.data.data;
           totalPages.value = response.data.data.last_page;
         } else if (
-          Array.isArray(response.data.data) && // Fallback for structures where data is direct array and last_page is sibling
+          Array.isArray(response.data.data) &&
           response.data.last_page !== undefined
         ) {
           plantList.value = response.data.data;
           totalPages.value = response.data.last_page;
         } else {
-          // This case suggests an unexpected structure for paginated data itself.
           console.error(
             "[Plants Store] Struktur respons API daftar tanaman tidak sesuai:",
             response.data.data
@@ -178,13 +171,12 @@ export const usePlantsStore = defineStore("plants", () => {
   }
 
   return {
-    // State untuk daftar tanaman
     plantList,
     plantsListPending,
     plantsListError,
     currentPage,
     totalPages,
-    totalPlantsCount, // Expose totalPlantsCount
+    totalPlantsCount,
     searchText,
     fetchPlants,
     updatePage,
@@ -235,8 +227,9 @@ export const usePlantsStore = defineStore("plants", () => {
 
     try {
       const response = await $api.post("/plants", formData, {
-        headers: { // $api service should ideally handle this for FormData
-          'Content-Type': 'multipart/form-data',
+        headers: {
+          // $api service should ideally handle this for FormData
+          "Content-Type": "multipart/form-data",
         },
       });
       // Optionally, refresh plants list or handle success (e.g., show notification)
@@ -268,17 +261,7 @@ export const usePlantsStore = defineStore("plants", () => {
           plantData[key] !== undefined &&
           plantData[key] !== ""
         ) {
-          // Ensure category_id is not empty string, convert to null if it is, or handle as needed by backend
           if (key === "category_id" && plantData[key] === "") {
-            // If backend expects null for empty category_id, or if it should be omitted
-            // formData.append(key, null); // This might not work as expected with FormData
-            // Or simply don't append if backend handles omitted field as no change or error
-            // For now, let's assume empty string is not a valid ID and should not be sent,
-            // or backend handles it. If it must be null, specific handling is needed.
-            // The provided snippet appends if not null/undefined, so empty string would pass.
-            // Let's refine to not send empty string for category_id if it's meant to be optional or cleared.
-            // However, the PlantForm requires category_id, so it shouldn't be empty during update
-            // unless the requirement changes. Sticking to provided logic:
             formData.append(key, plantData[key]);
           } else {
             formData.append(key, plantData[key]);
@@ -287,14 +270,9 @@ export const usePlantsStore = defineStore("plants", () => {
       }
     }
 
-    // Backend might expect PUT for updates, but many PHP frameworks (like Laravel)
-    // listen for POST with a _method field to simulate PUT for FormData.
-    // formData.append('_method', 'PUT'); // Uncomment if backend (e.g. Laravel) needs this for FormData updates
-
     try {
       const response = await $api.post(`/plants/${plantId}`, formData, {
         headers: {
-          // $api service should ideally handle this for FormData
           "Content-Type": "multipart/form-data",
         },
       });
@@ -313,14 +291,14 @@ export const usePlantsStore = defineStore("plants", () => {
     plantDeleteError.value = null;
     try {
       const response = await $api.delete(`/plants/${plantId}`);
-      return response.data; // Return response data on success
+      return response.data;
     } catch (err: any) {
       console.error(
         `[Plants Store] Failed to delete plant ${plantId}:`,
         err.response?.data || err.message || err
       );
       plantDeleteError.value = err.response?.data || err;
-      throw err; // Rethrow to be caught by the calling component
+      throw err;
     }
   }
 });
