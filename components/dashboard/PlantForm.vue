@@ -72,7 +72,10 @@
        <button type="button" @click="$emit('close')" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
         Batal
       </button>
-      <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-green-900 border border-transparent rounded-md shadow-sm hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+      <button
+        type="submit"
+        :disabled="networkStore.isOffline"
+        class="px-4 py-2 text-sm font-medium text-white bg-green-900 border border-transparent rounded-md shadow-sm hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50">
         Simpan
       </button>
     </div>
@@ -83,6 +86,9 @@
 import { reactive, onMounted, ref, onUnmounted, watch, defineProps } from 'vue'; // Added watch, defineProps
 import { useCategoriesStore } from '~/store/categories';
 import { storeToRefs } from 'pinia';
+import { useNetworkStore } from '~/store/network';
+
+const networkStore = useNetworkStore();
 
 const props = defineProps({
   isEditMode: {
@@ -175,6 +181,11 @@ onUnmounted(() => {
 });
 
 const handleSubmit = () => {
+  if (networkStore.isOffline) {
+    console.warn("Form submission prevented: application is offline.");
+    // Optionally, use $swal here for a more visible warning.
+    return;
+  }
   // Create a plain object copy for submission, especially if not using FormData for everything
   // For FormData usage as in the store, passing `formData` (the reactive proxy) is fine.
   emit('submit', { ...formData }); 
