@@ -66,7 +66,7 @@
       </button>
       <button
         type="submit"
-        :disabled="isSubmitting"
+        :disabled="isSubmitting || networkStore.isOffline"
         class="px-4 py-2 text-sm font-medium text-white bg-green-900 border border-transparent rounded-md shadow-sm hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-700 disabled:opacity-50"
       >
         {{ isEditMode ? 'Update Kegiatan' : 'Simpan Kegiatan' }}
@@ -78,6 +78,9 @@
 <script setup lang="ts">
 import { ref, watch, defineProps, defineEmits, onMounted } from 'vue';
 import { useRuntimeConfig } from '#app';
+import { useNetworkStore } from '~/store/network';
+
+const networkStore = useNetworkStore();
 
 interface FormDataType {
   judul: string;
@@ -162,6 +165,14 @@ function handleFileUpload(event: Event) {
 }
 
 function submitForm() {
+  if (networkStore.isOffline) {
+    console.warn("Form submission prevented: application is offline.");
+    // Optionally: use $swal here if a more prominent user notification is desired directly from the form.
+    // const { $swal } = useNuxtApp(); // Make sure to import useNuxtApp
+    // $swal.fire('Offline', 'Tidak dapat mengirim formulir saat offline. Periksa koneksi Anda.', 'warning');
+    return;
+  }
+
   const formData = new FormData();
   formData.append('judul', form.value.judul);
   formData.append('tanggal', form.value.tanggal);

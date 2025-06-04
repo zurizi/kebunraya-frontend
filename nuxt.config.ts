@@ -31,6 +31,50 @@ export default defineNuxtConfig({
     workbox: {
       navigateFallback: "/",
       globPatterns: ["**/*.{js,css,html,png,svg,ico}"],
+      runtimeCaching: [
+        {
+          urlPattern: ({url}) => url.pathname.startsWith('/api/tanaman'),
+          handler: 'StaleWhileRevalidate',
+          options: {
+            cacheName: 'api-tanaman-cache',
+            expiration: {
+              maxEntries: 50,
+              maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+            },
+            cacheableResponse: {
+              statuses: [0, 200]
+            }
+          }
+        },
+        {
+          urlPattern: ({url}) => url.pathname.startsWith('/api/kegiatan'),
+          handler: 'StaleWhileRevalidate',
+          options: {
+            cacheName: 'api-kegiatan-cache',
+            expiration: {
+              maxEntries: 50,
+              maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+            },
+            cacheableResponse: {
+              statuses: [0, 200]
+            }
+          }
+        },
+        {
+          urlPattern: ({url}) => url.pathname.startsWith('/api/kategori'),
+          handler: 'StaleWhileRevalidate',
+          options: {
+            cacheName: 'api-kategori-cache',
+            expiration: {
+              maxEntries: 30, // Categories might be fewer
+              maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+            },
+            cacheableResponse: {
+              statuses: [0, 200]
+            }
+          }
+        }
+      ]
     },
     strategies: "generateSW", // atau 'injectManifest'
     // registerType: 'autoUpdate', // Cara mendaftar service worker
