@@ -237,45 +237,98 @@ const chartOptions = {
     },
   },
   onClick: (event: ChartEvent, elementsAtEvent: ActiveElement[], chart: Chart) => {
-    const legend = chart.legend;
-    // @ts-ignore
-    const legendHitBoxes = legend.legendHitBoxes;
-    let legendClicked = false;
+    const clickX = event.x; // X-coordinate of the click relative to the chart canvas
+    const clickY = event.y; // Y-coordinate of the click relative to the chart canvas
+    const xAxis = chart.scales.x; // The x-axis object
+    // const yAxis = chart.scales.y; // The y-axis (mainly for context, not direct use here)
 
-    for (let i = 0; i < legendHitBoxes.length; i++) {
-      const hitBox = legendHitBoxes[i];
-      const { left, top, width, height } = hitBox;
-      const x = event.x;
-      const y = event.y;
+    let clickedTickIndex = -1; // Initialize to -1 (no tick clicked yet)
 
-      if (x >= left && x <= left + width && y >= top && y <= top + height) {
-        legendClicked = true;
-        const datasetIndex = legend.legendItems[i].datasetIndex;
-        const meta = chart.getDatasetMeta(datasetIndex);
+    // Proceed only if xAxis is defined
+    if (xAxis) {
+      // Define the vertical clickable area for x-axis labels.
+      // This assumes labels are reasonably close to the x-axis line.
+      // xAxis.bottom is the bottom pixel of the x-axis scale area.
+      // Add a buffer (e.g., 30px) to include area where labels are typically rendered.
+      const labelClickableMinY = xAxis.top; // Top of the x-axis scale area
+      // Estimate label height based on font size, provide a generous clickable zone below the axis bottom.
+      const labelEstimatedHeight = (xAxis.options.ticks?.font?.size || 12) * 2;
+      const labelClickableMaxY = xAxis.bottom + labelEstimatedHeight;
 
-        if (meta.hidden) {
-          chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-        } else {
-          const activeTooltips = chart.tooltip.getActiveElements();
-          if (activeTooltips.length > 0 && activeTooltips[0].datasetIndex === datasetIndex) {
-            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-          } else {
-            const activeElements: ActiveElement[] = [];
-            for (let j = 0; j < chart.data.datasets[datasetIndex].data.length; j++) {
-              activeElements.push({ datasetIndex: datasetIndex, index: j });
-            }
-            chart.tooltip.setActiveElements(activeElements, { x: event.x, y: event.y });
+      if (clickY >= labelClickableMinY && clickY <= labelClickableMaxY) {
+        const ticksCount = xAxis.getTicks().length; // Number of ticks on the x-axis
+
+        for (let i = 0; i < ticksCount; i++) {
+          const tickPixelX = xAxis.getPixelForTick(i); // Get x-pixel for the current tick
+
+          // Define the horizontal clickable region for this tick.
+          // It's roughly from halfway to the previous tick to halfway to the next tick.
+          const prevTickPixelX = (i > 0) ? xAxis.getPixelForTick(i - 1) : xAxis.left;
+          const nextTickPixelX = (i < ticksCount - 1) ? xAxis.getPixelForTick(i + 1) : xAxis.right;
+
+          // Calculate midpoints to define the boundary for the current tick's clickable zone
+          const regionStart = (i === 0) ? xAxis.left : (tickPixelX + prevTickPixelX) / 2;
+          const regionEnd = (i === ticksCount - 1) ? xAxis.right : (tickPixelX + nextTickPixelX) / 2;
+
+          if (clickX >= regionStart && clickX <= regionEnd) {
+            clickedTickIndex = i; // Tick `i` was clicked
+            break; // Exit loop once the clicked tick is found
           }
         }
-        chart.update();
-        break;
       }
     }
 
-    if (!legendClicked && elementsAtEvent.length === 0) {
-      chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-      chart.update();
+    if (clickedTickIndex !== -1) {
+      // An x-axis tick/label was clicked
+      const dataIndex = clickedTickIndex; // This is the index into the data arrays
+      const activeTooltips = chart.tooltip.getActiveElements();
+      let isTooltipActiveForThisDataIndex = false;
+
+      // Check if the currently active tooltip is for THIS specific dataIndex and for ALL relevant datasets
+      if (activeTooltips.length > 0 && activeTooltips.every(el => el.index === dataIndex)) {
+        const visibleDatasetsCount = chart.data.datasets.filter((_, dsIndex) => chart.isDatasetVisible(dsIndex)).length;
+        if (activeTooltips.length === visibleDatasetsCount && visibleDatasetsCount > 0) {
+          isTooltipActiveForThisDataIndex = true;
+        }
+      }
+
+      if (isTooltipActiveForThisDataIndex) {
+        // Tooltip for this dataIndex is already active, so hide it
+        chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+      } else {
+        // Tooltip for this dataIndex is not active, or a different tooltip is active. Show it.
+        const newActiveElements: ActiveElement[] = [];
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+          // Include only if the dataset is visible
+          if (chart.isDatasetVisible(datasetIndex)) {
+            // And if the dataset actually has data at this specific index
+            if (dataset.data && dataset.data.length > dataIndex && dataset.data[dataIndex] !== null && typeof dataset.data[dataIndex] !== 'undefined') {
+              newActiveElements.push({ datasetIndex, index: dataIndex });
+            }
+          }
+        });
+
+        if (newActiveElements.length > 0) {
+          // Set the new active elements for the tooltip and provide event position for Chart.js to place tooltip
+          chart.tooltip.setActiveElements(newActiveElements, { x: event.x, y: event.y });
+        } else {
+          // If no elements to activate (e.g., all datasets hidden or no data at this point), clear any existing tooltips
+          chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+        }
+      }
+      chart.update(); // Update the chart to reflect tooltip changes
+    } else if (elementsAtEvent.length === 0) {
+      // Click was not on an x-axis label AND not on a data point element (bar, point, etc.)
+      // This means the click was on an empty part of the chart. Hide any active tooltip.
+      if (chart.tooltip && chart.tooltip.getActiveElements().length > 0) {
+        chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+        chart.update();
+      }
     }
+    // If elementsAtEvent.length > 0, a data point was clicked.
+    // Chart.js default behavior for tooltips on data points (e.g., on hover or if configured for click)
+    // should take over. Our current logic doesn't interfere if elementsAtEvent is populated,
+    // unless the click also falls into an x-axis label region (which then takes precedence).
   },
 };
 
