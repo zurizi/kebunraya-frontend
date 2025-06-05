@@ -153,6 +153,9 @@ import {
   CategoryScale,
   LinearScale,
   ArcElement,
+  type ChartEvent,
+  type ActiveElement,
+  type Chart,
 } from "chart.js";
 import { Bar, Doughnut, Line } from "vue-chartjs";
 
@@ -232,6 +235,47 @@ const chartOptions = {
         title: (context) => context[0].label,
       },
     },
+  },
+  onClick: (event: ChartEvent, elementsAtEvent: ActiveElement[], chart: Chart) => {
+    const legend = chart.legend;
+    // @ts-ignore
+    const legendHitBoxes = legend.legendHitBoxes;
+    let legendClicked = false;
+
+    for (let i = 0; i < legendHitBoxes.length; i++) {
+      const hitBox = legendHitBoxes[i];
+      const { left, top, width, height } = hitBox;
+      const x = event.x;
+      const y = event.y;
+
+      if (x >= left && x <= left + width && y >= top && y <= top + height) {
+        legendClicked = true;
+        const datasetIndex = legend.legendItems[i].datasetIndex;
+        const meta = chart.getDatasetMeta(datasetIndex);
+
+        if (meta.hidden) {
+          chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+        } else {
+          const activeTooltips = chart.tooltip.getActiveElements();
+          if (activeTooltips.length > 0 && activeTooltips[0].datasetIndex === datasetIndex) {
+            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+          } else {
+            const activeElements: ActiveElement[] = [];
+            for (let j = 0; j < chart.data.datasets[datasetIndex].data.length; j++) {
+              activeElements.push({ datasetIndex: datasetIndex, index: j });
+            }
+            chart.tooltip.setActiveElements(activeElements, { x: event.x, y: event.y });
+          }
+        }
+        chart.update();
+        break;
+      }
+    }
+
+    if (!legendClicked && elementsAtEvent.length === 0) {
+      chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+      chart.update();
+    }
   },
 };
 
