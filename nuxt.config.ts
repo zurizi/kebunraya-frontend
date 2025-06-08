@@ -33,6 +33,20 @@ export default defineNuxtConfig({
       globPatterns: ["**/*.{js,css,html,png,svg,ico}"],
       runtimeCaching: [
         {
+          urlPattern: ({url}) => url.pathname === '/',
+          handler: 'StaleWhileRevalidate', // Or 'NetworkFirst' if immediate freshness for the homepage is critical on network
+          options: {
+            cacheName: 'root-cache',
+            expiration: {
+              maxEntries: 10, // Usually just one entry (the root)
+              maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+            },
+            cacheableResponse: {
+              statuses: [0, 200] // Cache successful responses and opaque responses
+            }
+          }
+        },
+        {
           urlPattern: ({url}) => url.pathname.startsWith('/api/tanaman'),
           handler: 'StaleWhileRevalidate',
           options: {
