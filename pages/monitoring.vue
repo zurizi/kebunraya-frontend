@@ -137,7 +137,7 @@
 
 <script setup lang="ts">
 import { useMonitoringStore } from "@/store/monitoring";
-import { onMounted, ref, computed, watch } from "vue";
+import { onMounted, ref, computed, watch, onBeforeUnmount } from "vue";
 import { useNuxtApp, useRuntimeConfig } from "#app";
 
 const runtimeConfig = useRuntimeConfig();
@@ -181,6 +181,8 @@ const totalWeeks = computed(() =>
     ? Object.keys(monitoringStore.weeklyDashboardData).length
     : 0
 );
+
+const chartPointRadius = ref(10);
 
 const chartData = ref({
   labels: [],
@@ -248,24 +250,32 @@ const updateChartData = () => {
           data: [0, 0, 0, 0, 0, 0, 0],
           borderColor: "#00587A",
           backgroundColor: "#00587A",
+          pointRadius: chartPointRadius.value,
+          pointHoverRadius: chartPointRadius.value + 2,
         },
         {
           label: "CO2",
           data: [0, 0, 0, 0, 0, 0, 0],
           borderColor: "#FFD700",
           backgroundColor: "#FFD700",
+          pointRadius: chartPointRadius.value,
+          pointHoverRadius: chartPointRadius.value + 2,
         },
         {
           label: "Suhu",
           data: [0, 0, 0, 0, 0, 0, 0],
           borderColor: "#3B6E3B",
           backgroundColor: "#3B6E3B",
+          pointRadius: chartPointRadius.value,
+          pointHoverRadius: chartPointRadius.value + 2,
         },
         {
           label: "Kecepatan Angin",
           data: [0, 0, 0, 0, 0, 0, 0],
           borderColor: "#795548",
           backgroundColor: "#795548",
+          pointRadius: chartPointRadius.value,
+          pointHoverRadius: chartPointRadius.value + 2,
         },
       ],
     };
@@ -292,27 +302,45 @@ const updateChartData = () => {
         data: coData,
         borderColor: "#00587A",
         backgroundColor: "#00587A",
+        pointRadius: chartPointRadius.value,
+        pointHoverRadius: chartPointRadius.value + 2,
       },
       {
         label: "CO2",
         data: co2Data,
         borderColor: "#FFD700",
         backgroundColor: "#FFD700",
+        pointRadius: chartPointRadius.value,
+        pointHoverRadius: chartPointRadius.value + 2,
       },
       {
         label: "Suhu",
         data: temperatureData,
         borderColor: "#3B6E3B",
         backgroundColor: "#3B6E3B",
+        pointRadius: chartPointRadius.value,
+        pointHoverRadius: chartPointRadius.value + 2,
       },
       {
         label: "Kecepatan Angin",
         data: windspeedData,
         borderColor: "#795548",
         backgroundColor: "#795548",
+        pointRadius: chartPointRadius.value,
+        pointHoverRadius: chartPointRadius.value + 2,
       },
     ],
   };
+};
+
+const updateChartPointRadius = () => {
+  if (typeof window !== 'undefined') { // Ensure window is defined (for SSR safety)
+    if (window.innerWidth < 768) { // Mobile breakpoint
+      chartPointRadius.value = 6; // Larger radius for mobile
+    } else {
+      chartPointRadius.value = 3; // Default radius for desktop
+    }
+  }
 };
 
 const doughnutChartOptions = {
@@ -527,24 +555,41 @@ const exportExcel = async () => {
 };
 
 onMounted(() => {
-  const initialDates = getStartAndEndOfCurrentMonth();
-  startDate.value = initialDates.start;
-  endDate.value = initialDates.end;
+  // For chart point radius
+  if (typeof window !== 'undefined') {
+    updateChartPointRadius(); // Set initial radius
+    window.addEventListener('resize', updateChartPointRadius);
+  }
 
-  settingDatesFromPeriod.value = true;
+  // For export date initialization (existing logic from the file)
+  // Ensure 'startDate', 'endDate', 'settingDatesFromPeriod', 
+  // 'getStartAndEndOfCurrentMonth' are defined and accessible.
+  const initialDates = getStartAndEndOfCurrentMonth(); // This function must be defined
   startDate.value = initialDates.start;
   endDate.value = initialDates.end;
+  settingDatesFromPeriod.value = true; 
   setTimeout(() => {
     settingDatesFromPeriod.value = false;
   }, 0);
+  // console.log("Initial dates set for export:", startDate.value, endDate.value); // console.log removed for cleaner code
 
-  console.log("Initial dates set:", startDate.value, endDate.value);
-});
-
-onMounted(() => {
+  // For data fetching (existing logic from the file)
   monitoringStore.fetchLatestData();
   if (!monitoringStore.weeklyDashboardData) {
-    monitoringStore.fetchWeeklyDashboardData().then(() => updateChartData());
+    monitoringStore.fetchWeeklyDashboardData().then(() => {
+      // updateChartData() will be called by the watcher for weeklyDashboardData,
+      // or the new watcher for chartPointRadius if it changes.
+    });
+  } else {
+     // If data is already present, existing watchers should handle chart update.
+     // Call updateChartData() explicitly if necessary to ensure initial render with correct radius.
+     updateChartData();
+  }
+});
+
+onBeforeUnmount(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', updateChartPointRadius);
   }
 });
 
@@ -557,6 +602,10 @@ watch(
 );
 
 watch(currentWeek, () => {
+  updateChartData();
+});
+
+watch(chartPointRadius, () => {
   updateChartData();
 });
 </script>
