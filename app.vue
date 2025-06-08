@@ -54,16 +54,16 @@ const showMonitoringAlert = async () => {
 
     try {
       await monitoringStore.fetchLatestData();
+      $swal.close(); // Close the initial loading alert
 
       if (monitoringStore.latestError) {
-        $swal.update({
+        $swal.fire({ // Use fire for new alert
           title: 'Gagal Memuat Data',
           text: monitoringStore.latestError,
           icon: 'error',
           showConfirmButton: true,
           confirmButtonText: 'Tutup',
           allowOutsideClick: false, // User must explicitly close
-          didOpen: null, // Clear didOpen
         });
       } else {
         const latestData = monitoringStore.latestData;
@@ -109,25 +109,24 @@ const showMonitoringAlert = async () => {
           </div>
         `;
 
-        $swal.update({
+        $swal.fire({ // Use fire for new alert
           title: "Kondisi Udara Terkini",
           html: htmlContent,
           showConfirmButton: true,
           confirmButtonText: 'Mengerti',
           allowOutsideClick: false, // User must explicitly close
-          didOpen: null, // Clear didOpen
         });
       }
     } catch (error) {
       // Catch any unexpected errors during fetch or processing
-      $swal.update({
+      $swal.close(); // Close the initial loading alert
+      $swal.fire({ // Use fire for new alert
         title: 'Terjadi Kesalahan',
         text: 'Tidak dapat memproses permintaan data monitoring.',
         icon: 'error',
         showConfirmButton: true,
         confirmButtonText: 'Tutup',
         allowOutsideClick: false, // User must explicitly close
-        didOpen: null, // Clear didOpen
       });
     }
   }
