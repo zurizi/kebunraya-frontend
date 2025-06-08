@@ -2,9 +2,11 @@
 import { onMounted, onUnmounted, watch } from 'vue'
 import { useNuxtApp } from '#app'
 import { useNetworkStore } from '~/store/network' // Adjusted path
+import { useMonitoringStore } from '~/store/monitoring' // Corrected import path
 
 const { $swal } = useNuxtApp()
 const networkStore = useNetworkStore()
+const monitoringStore = useMonitoringStore() // Initialize monitoring store
 
 const handleOffline = () => {
   networkStore.setOfflineStatus(true)
@@ -35,7 +37,101 @@ onMounted(() => {
         });
       }
   }
+  showMonitoringAlert() // Call the new function
 })
+
+const showMonitoringAlert = async () => {
+  // Check if no other SweetAlert is visible and the app is online
+  if (!$swal.isVisible() && !networkStore.isOffline) {
+    $swal.fire({
+      title: 'Memuat Data Monitoring...',
+      didOpen: () => {
+        $swal.showLoading()
+      },
+      allowOutsideClick: true,
+      showConfirmButton: false,
+    });
+
+    try {
+      await monitoringStore.fetchLatestData();
+
+      if (monitoringStore.latestError) {
+        $swal.update({
+          title: 'Gagal Memuat Data',
+          text: monitoringStore.latestError,
+          icon: 'error',
+          showConfirmButton: true,
+          confirmButtonText: 'Tutup',
+          allowOutsideClick: false, // User must explicitly close
+          didOpen: null, // Clear didOpen
+        });
+      } else {
+        const latestData = monitoringStore.latestData;
+        const airQualityConditions = monitoringStore.airQualityConditions;
+
+        // Safely access nested properties, providing defaults if necessary
+        const coValue = latestData?.co ?? 'N/A';
+        const co2Value = latestData?.co2 ?? 'N/A';
+        const timeValue = latestData?.time ?? 'N/A';
+
+        const airQualityStatusLabel = monitoringStore.getAirQualityStatus(coValue, co2Value);
+        const condition = airQualityConditions.find(
+          (c) => c.label.toLowerCase() === airQualityStatusLabel?.toLowerCase()
+        );
+
+        const bgColor = condition?.color ? `bg-${condition.color}-500` : 'bg-gray-200'; // Default bg if color undefined
+        const emoji = condition?.emoji ?? '❓';
+        const label = condition?.label ?? 'Tidak Diketahui';
+        const description = condition?.description ?? 'Data kualitas udara tidak tersedia.';
+
+        const htmlContent = `
+          <div class="flex flex-col w-full overflow-hidden rounded-3xl">
+            <div class="flex flex-col items-center justify-center w-full h-full p-5 text-black ${bgColor}">
+              <div class="text-[70px] sm:text-[80px] md:text-[100px]"> <!-- Responsive text size for emoji -->
+                ${emoji}
+              </div>
+              <div class="mb-2 text-xl sm:text-2xl font-semibold"> <!-- Responsive text size for label -->
+                ${label}
+              </div>
+              <p class="mb-2 text-xs sm:text-sm text-center"> <!-- Responsive text size for description -->
+                ${description}
+              </p>
+              <div class="flex items-end justify-between w-full mt-3">
+                <div class="flex flex-col space-y-0.5 font-semibold text-[10px] sm:text-xs"> <!-- Responsive text size -->
+                  <span>CO : ${coValue} ppm</span>
+                  <span>CO2 : ${co2Value} ppm</span>
+                </div>
+                <span class="text-[10px] sm:text-xs"> <!-- Responsive text size -->
+                  Diambil Terakhir pada ${timeValue}
+                </span>
+              </div>
+            </div>
+          </div>
+        `;
+
+        $swal.update({
+          title: "Kondisi Udara Terkini",
+          html: htmlContent,
+          showConfirmButton: true,
+          confirmButtonText: 'Mengerti',
+          allowOutsideClick: false, // User must explicitly close
+          didOpen: null, // Clear didOpen
+        });
+      }
+    } catch (error) {
+      // Catch any unexpected errors during fetch or processing
+      $swal.update({
+        title: 'Terjadi Kesalahan',
+        text: 'Tidak dapat memproses permintaan data monitoring.',
+        icon: 'error',
+        showConfirmButton: true,
+        confirmButtonText: 'Tutup',
+        allowOutsideClick: false, // User must explicitly close
+        didOpen: null, // Clear didOpen
+      });
+    }
+  }
+}
 
 onUnmounted(() => {
   window.removeEventListener('offline', handleOffline)
