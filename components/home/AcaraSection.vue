@@ -23,7 +23,7 @@
           v-else-if="
             kegiatanStore.kegiatanList && kegiatanStore.kegiatanList.length > 0
           "
-          class="grid w-full grid-cols-2 gap-8 lg:grid-cols-3"
+          class="grid w-full grid-cols-2 gap-8 lg:grid-cols-4"
         >
           <nuxt-link
             v-for="kegiatan in kegiatanStore.kegiatanList.slice(0, 4)"

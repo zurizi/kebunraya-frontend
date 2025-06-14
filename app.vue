@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, watch } from 'vue'
 import { useNuxtApp } from '#app'
+import { useRoute } from 'vue-router';
 import { useNetworkStore } from '~/store/network' // Adjusted path
 import { useMonitoringStore } from '~/store/monitoring' // Corrected import path
 
 const { $swal } = useNuxtApp()
 const networkStore = useNetworkStore()
 const monitoringStore = useMonitoringStore() // Initialize monitoring store
+const route = useRoute();
 
 const handleOffline = () => {
   networkStore.setOfflineStatus(true)
@@ -41,6 +43,13 @@ onMounted(() => {
 })
 
 const showMonitoringAlert = async () => {
+  if (route.path === '/login') {
+    // If a swal is open (e.g. loading), close it before returning
+    if ($swal.isVisible()) {
+      $swal.close();
+    }
+    return;
+  }
   // Check if no other SweetAlert is visible and the app is online
   if (!$swal.isVisible() && !networkStore.isOffline) {
     $swal.fire({
@@ -86,22 +95,22 @@ const showMonitoringAlert = async () => {
 
         const htmlContent = `
           <div class="flex flex-col w-full overflow-hidden rounded-3xl">
-            <div class="flex flex-col items-center justify-center w-full h-full p-5 text-black ${bgColor}">
-              <div class="text-[70px] sm:text-[80px] md:text-[100px]"> <!-- Responsive text size for emoji -->
+            <div class="flex flex-col items-center justify-center w-full h-full p-3 sm:p-4 md:p-5 text-black ${bgColor}">
+              <div class="text-[50px] sm:text-[60px] md:text-[80px]"> <!-- Responsive text size for emoji -->
                 ${emoji}
               </div>
-              <div class="mb-2 text-xl sm:text-2xl font-semibold"> <!-- Responsive text size for label -->
+              <div class="mb-2 text-lg sm:text-xl font-semibold"> <!-- Responsive text size for label -->
                 ${label}
               </div>
               <p class="mb-2 text-xs sm:text-sm text-center"> <!-- Responsive text size for description -->
                 ${description}
               </p>
-              <div class="flex items-end justify-between w-full mt-3">
+              <div class="flex flex-col sm:flex-row items-start sm:items-end justify-between w-full mt-3">
                 <div class="flex flex-col space-y-0.5 font-semibold text-[10px] sm:text-xs"> <!-- Responsive text size -->
                   <span>CO : ${coValue} ppm</span>
                   <span>CO2 : ${co2Value} ppm</span>
                 </div>
-                <span class="text-[10px] sm:text-xs"> <!-- Responsive text size -->
+                <span class="text-[10px] sm:text-xs mt-1 sm:mt-0"> <!-- Responsive text size -->
                   Diambil Terakhir pada ${timeValue}
                 </span>
               </div>
