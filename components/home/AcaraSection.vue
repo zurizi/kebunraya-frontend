@@ -23,10 +23,10 @@
           v-else-if="
             kegiatanStore.kegiatanList && kegiatanStore.kegiatanList.length > 0
           "
-          class="grid w-full grid-cols-1 gap-8 lg:grid-cols-3"
+          class="grid w-full grid-cols-2 gap-8 lg:grid-cols-4"
         >
           <nuxt-link
-            v-for="kegiatan in kegiatanStore.kegiatanList.slice(0, 3)"
+            v-for="kegiatan in kegiatanStore.kegiatanList.slice(0, 4)"
             :to="`/kegiatan/${kegiatan.id}`"
             :key="kegiatan.id"
             class="flex flex-col overflow-hidden bg-white shadow rounded-3xl"
@@ -41,7 +41,7 @@
                   : '/placeholder-image.jpg'
               "
               :alt="`Gambar ${kegiatan.judul || 'Kegiatan'}`"
-              class="object-cover w-full max-h-64"
+              class="object-cover w-full h-24 sm:h-48 xl:h-64"
             />
 
             <div class="flex flex-col w-full p-4 space-y-2">

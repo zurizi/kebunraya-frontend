@@ -38,7 +38,7 @@
                   : '/placeholder-image.jpg'
               "
               :alt="`Gambar ${plant.nama_lokal || 'Tanaman'}`"
-              class="object-cover w-full max-h-32 sm:max-h-48 xl:max-h-64"
+              class="object-cover w-full h-24 sm:h-48 xl:h-64"
             />
 
             <div class="flex flex-col w-full p-2 space-y-1 md:space-y-2 md:p-4">

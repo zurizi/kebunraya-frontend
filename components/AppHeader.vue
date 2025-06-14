@@ -110,16 +110,6 @@
             </li>
           </ul>
         </nav>
-        <div class="absolute right-0 flex items-end md:relative">
-          <nuxt-link to="/login">
-            <BaseButton
-              width="auto"
-              addClass="px-6 text-xs px-12 md:px-16"
-              color="green"
-              >Login</BaseButton
-            >
-          </nuxt-link>
-        </div>
       </div>
     </div>
 
