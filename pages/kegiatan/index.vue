@@ -66,7 +66,7 @@ onMounted(() => {
       v-else-if="
         kegiatanStore.kegiatanList && kegiatanStore.kegiatanList.length > 0
       "
-      class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4"
+      class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
     >
       <div
         v-for="kegiatan in kegiatanStore.kegiatanList"
@@ -81,9 +81,9 @@ onMounted(() => {
             aria-label="Kegiatan images"
             class="w-full h-full"
           >
-            <SplideTrack class="w-full h-full">
+            <SplideTrack class="w-full h-full ">
               <SplideSlide v-for="(image, index) in parseImageString(kegiatan.gambar)" :key="index">
-                <img :src="image" :alt="`Gambar ${kegiatan.judul || 'Kegiatan'} ${index + 1}`" class="object-cover w-full h-full" />
+                <img :src="image" :alt="`Gambar ${kegiatan.judul || 'Kegiatan'} ${index + 1}`" class="object-cover w-full h-full aspect-square" />
               </SplideSlide>
             </SplideTrack>
           </Splide>
@@ -91,7 +91,7 @@ onMounted(() => {
             v-else-if="getFirstImage(kegiatan.gambar)"
             :src="getFirstImage(kegiatan.gambar)!"
             :alt="`Gambar ${kegiatan.judul || 'Kegiatan'}`"
-            class="object-cover w-full h-full"
+            class="object-cover w-full h-full aspect-square"
           />
           <div v-else class="flex items-center justify-center w-full h-full">
             <span class="text-sm text-gray-500">Belum ada gambar</span>

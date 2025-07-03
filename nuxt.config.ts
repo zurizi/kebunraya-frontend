@@ -1,5 +1,3 @@
-// nuxt.config.ts
-
 import icons from "./public/icons/icons.json";
 import mkcert from "vite-plugin-mkcert";
 
@@ -110,13 +108,13 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       axios: {
-        // baseURL: "https://backend.kebunrayabundahayati.com/api/",
+        baseURL: "https://backend.kebunrayabundahayati.com/api/",
         // baseURL: "https://back-end-kebunraya.marannu.com/api/",
-        baseURL: "http://backend-kebunraya.test/api/",
+        // baseURL: "http://backend-kebunraya.test/api/",
       },
-      // imgURL: "https://backend.kebunrayabundahayati.com/storage",
+      imgURL: "https://backend.kebunrayabundahayati.com/storage",
       // imgURL : "https://back-end-kebunraya.marannu.com"
-      imgURL : "http://backend-kebunraya.test/"
+      // imgURL : "http://backend-kebunraya.test/"
     },
   },
   devServer: {
