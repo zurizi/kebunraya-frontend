@@ -110,17 +110,17 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       axios: {
-        baseURL: "https://backend.kebunrayabundahayati.com/api/",
+        // baseURL: "https://backend.kebunrayabundahayati.com/api/",
         // baseURL: "https://back-end-kebunraya.marannu.com/api/",
-        // baseURL: "http://backend-kebunraya.test/api/",
+        baseURL: "http://backend-kebunraya.test/api/",
       },
-      imgURL: "https://backend.kebunrayabundahayati.com/storage",
+      // imgURL: "https://backend.kebunrayabundahayati.com/storage",
       // imgURL : "https://back-end-kebunraya.marannu.com"
-      // imgURL : "http://backend-kebunraya.test/"
+      imgURL : "http://backend-kebunraya.test/"
     },
   },
   devServer: {
-    port: 2000, // Ganti 8000 dengan port yang Anda inginkan
+    port: 2000, 
   },
   // Konfigurasi app
   app: {

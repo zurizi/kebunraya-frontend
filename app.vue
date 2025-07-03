@@ -2,12 +2,14 @@
 import { onMounted, onUnmounted, watch } from 'vue'
 import { useNuxtApp } from '#app'
 import { useRoute } from 'vue-router';
-import { useNetworkStore } from '~/store/network' // Adjusted path
-import { useMonitoringStore } from '~/store/monitoring' // Corrected import path
+import { useNetworkStore } from '~/store/network'
+import { useMonitoringStore } from '~/store/monitoring'
+import { useCategoriesStore } from '~/store/categories'; // Import categories store
 
 const { $swal } = useNuxtApp()
 const networkStore = useNetworkStore()
-const monitoringStore = useMonitoringStore() // Initialize monitoring store
+const monitoringStore = useMonitoringStore()
+const categoriesStore = useCategoriesStore(); // Initialize categories store
 const route = useRoute();
 
 const handleOffline = () => {
@@ -39,11 +41,16 @@ onMounted(() => {
         });
       }
   }
+
+  // Fetch categories once on app load
+  categoriesStore.fetchCategories();
+
   showMonitoringAlert() // Call the new function
 })
 
 const showMonitoringAlert = async () => {
-  if (route.path === '/login') {
+  // Do not show the alert on /login or any /dashboard/* routes
+  if (route.path === '/login' || route.path.startsWith('/dashboard')) {
     // If a swal is open (e.g. loading), close it before returning
     if ($swal.isVisible()) {
       $swal.close();

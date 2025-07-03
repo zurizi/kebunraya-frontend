@@ -18,9 +18,15 @@ export const useCategoriesStore = defineStore("categories", () => {
   const categoryListPending = ref(false);
   const categoryListError = ref<any>(null); // Can be more specific if error structure is known
   const totalCategoriesCount = ref(0); // New state for total categories
+  const hasFetched = ref(false); // Flag to ensure fetch only happens once unless forced
 
   // Action to fetch categories
-  async function fetchCategories() {
+  async function fetchCategories(force = false) {
+    // If categories are already loaded and not forcing, or if a fetch is pending, return
+    if ((hasFetched.value && !force) || categoryListPending.value) {
+      return;
+    }
+
     categoryListPending.value = true;
     categoryListError.value = null;
     try {
@@ -46,18 +52,21 @@ export const useCategoriesStore = defineStore("categories", () => {
         // else {
           // If no total count information is found, totalCategoriesCount will retain previous value or 0
         // }
+        hasFetched.value = true; // Successfully fetched
       } else {
         // Handle unexpected response structure
         console.error("[Categories Store] Unexpected API response structure:", response.data);
         categoryList.value = []; 
         totalCategoriesCount.value = 0; // Reset on error or bad structure
         // categoryListError.value = new Error("Unexpected API response structure"); // Optionally set an error
+        // Do not set hasFetched to true here, to allow retries
       }
     } catch (err: any) {
       console.error("[Categories Store] Failed to fetch categories:", err);
       categoryListError.value = err;
       categoryList.value = []; 
       totalCategoriesCount.value = 0; // Reset on error
+      // Do not set hasFetched to true here, to allow retries
     } finally {
       categoryListPending.value = false;
     }

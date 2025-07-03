@@ -36,13 +36,20 @@
           :data="kegiatanList"
         >
           <template #gambar="{ row }">
-            <img
-              v-if="row.gambar"
-              :src="getFullImageUrl(row.gambar)"
-              alt="Gambar Kegiatan"
-              class="object-cover w-20 h-10 rounded"
-            />
-            <span v-else>Tidak ada gambar</span>
+            <div class="relative w-20 h-16">
+              <img
+                v-if="getFirstImage(row.gambar)"
+                :src="getFirstImage(row.gambar)!"
+                alt="Gambar Kegiatan"
+                class="object-cover w-full h-full rounded"
+              />
+              <span v-else class="flex items-center justify-center w-full h-full text-xs text-gray-500 bg-gray-100 rounded">Belum ada gambar</span>
+              <div v-if="parseImageString(row.gambar).length > 1"
+                   class="absolute bottom-0 right-0 px-1 py-0.5 text-xs text-white bg-black bg-opacity-60 rounded-tl-md rounded-br-md"
+                   :title="`${parseImageString(row.gambar).length} images`">
+                +{{ parseImageString(row.gambar).length - 1 }}
+              </div>
+            </div>
           </template>
           <template #actions="{ row }">
             <div class="flex items-center space-x-2">
@@ -119,12 +126,14 @@ import BaseTable from '~/components/Table/BaseTable.vue';
 import Pagination from '~/components/Pagination.vue';
 import Modal from '~/components/Modal.vue';
 import KegiatanForm from '~/components/dashboard/KegiatanForm.vue';
-import { useNuxtApp, useRuntimeConfig } from "#app";
+import { useNuxtApp } from "#app"; // Removed useRuntimeConfig
+import { useImageUtils } from '~/composables/useImageUtils'; // Import useImageUtils
 
 definePageMeta({ layout: 'dashboard' });
 
 const nuxtApp = useNuxtApp();
-const runtimeConfig = useRuntimeConfig();
+// const runtimeConfig = useRuntimeConfig(); // No longer needed directly for image URL here
+const { getFirstImage, parseImageString } = useImageUtils(); // Destructure utils
 const kegiatanStore = useKegiatanStore();
 
 const {
@@ -147,15 +156,6 @@ const tableDisplayColumns = [
   // deskripsi might be too long for table, consider showing in detail view or tooltip
   { key: 'actions', label: 'Aksi' }
 ];
-
-const getFullImageUrl = (imagePath: string | null | undefined): string => {
-  if (!imagePath) return '';
-  if (imagePath.startsWith('http') || imagePath.startsWith('blob:')) {
-    return imagePath;
-  }
-  const base = runtimeConfig.public.imgURL || runtimeConfig.public.imageCDN || '';
-  return `${base}/${imagePath.startsWith('/') ? imagePath.substring(1) : imagePath}`;
-};
 
 onMounted(() => {
   // Reset search query in store if current page's query is empty,

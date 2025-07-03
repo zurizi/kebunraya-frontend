@@ -1,7 +1,7 @@
 <template>
   <section id="acara">
     <div
-      class="flex flex-col w-full px-8 space-y-4 sm:px-14 md:px-18   lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
+      class="flex flex-col w-full px-8 space-y-4 sm:px-14 md:px-18 lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
     >
       <div class="text-xl font-semibold">Jangan Lewatkan Acara Kami</div>
       <p>
@@ -25,45 +25,58 @@
           "
           class="grid w-full grid-cols-2 gap-8 lg:grid-cols-4"
         >
-          <nuxt-link
+          <div
             v-for="kegiatan in kegiatanStore.kegiatanList.slice(0, 4)"
-            :to="`/kegiatan/${kegiatan.id}`"
             :key="kegiatan.id"
-            class="flex flex-col overflow-hidden bg-white shadow rounded-3xl"
+            class="relative flex flex-col overflow-hidden bg-white shadow rounded-3xl"
           >
-            <img
-              :src="
-                kegiatan.gambar
-                  ? `${
-                      runtimeConfig.public.imgURL ||
-                      runtimeConfig.public.imageCDN
-                    }/${kegiatan.gambar}`
-                  : '/placeholder-image.jpg'
-              "
-              :alt="`Gambar ${kegiatan.judul || 'Kegiatan'}`"
-              class="object-cover w-full h-24 sm:h-48 xl:h-64"
-            />
-
-            <div class="flex flex-col w-full p-4 space-y-2">
-              <div
-                class="flex items-center justify-center w-full text-2xl font-semibold text-center"
+            <div class="w-full bg-gray-200 aspect-square">
+              <Splide
+                v-if="getImageCount(kegiatan.gambar) > 1"
+                :options="cardSplideOptions"
+                :has-track="false"
+                aria-label="Kegiatan images"
+                class="w-full h-full"
               >
-                {{ kegiatan.judul }}
-              </div>
-
-              <div
-                class="flex items-center justify-center w-full text-sm text-center"
-              >
-                {{ kegiatan.tanggal }}
-              </div>
-
-              <div
-                class="flex items-center justify-center w-full text-sm text-center"
-              >
-                {{ kegiatan.lokasi }}
+                <SplideTrack class="w-full h-full">
+                  <SplideSlide v-for="(image, index) in parseImageString(kegiatan.gambar)" :key="index">
+                    <img :src="image" :alt="`Gambar ${kegiatan.judul || 'Kegiatan'} ${index + 1}`" class="object-cover w-full h-full" />
+                  </SplideSlide>
+                </SplideTrack>
+              </Splide>
+              <img
+                v-else-if="getFirstImage(kegiatan.gambar)"
+                :src="getFirstImage(kegiatan.gambar)!"
+                :alt="`Gambar ${kegiatan.judul || 'Kegiatan'}`"
+                class="object-cover w-full h-full"
+              />
+              <div v-else class="flex items-center justify-center w-full h-full">
+                <span class="text-sm text-gray-500">Belum ada gambar</span>
               </div>
             </div>
-          </nuxt-link>
+            <!-- Removed multiple image count indicator -->
+            <NuxtLink :to="`/kegiatan/${kegiatan.id}`" class="block hover:bg-gray-50">
+              <div class="flex flex-col w-full p-4 space-y-2">
+                <div
+                  class="flex items-center justify-center w-full text-2xl font-semibold text-center"
+                >
+                  {{ kegiatan.judul }}
+                </div>
+
+                <div
+                  class="flex items-center justify-center w-full text-sm text-center"
+                >
+                  {{ kegiatan.tanggal }}
+                </div>
+
+                <div
+                  class="flex items-center justify-center w-full text-sm text-center"
+                >
+                  {{ kegiatan.lokasi }}
+                </div>
+              </div>
+            </NuxtLink>
+          </div>
         </div>
       </div>
     </div>
@@ -73,12 +86,47 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { useKegiatanStore } from "@/store/kegiatan";
-import { useRuntimeConfig } from "#app";
+// import { useRuntimeConfig } from "#app";
+import { useImageUtils } from '~/composables/useImageUtils';
+import { Splide, SplideSlide, SplideTrack } from '@splidejs/vue-splide';
+import '@splidejs/vue-splide/css'; // Import Splide's default CSS
 
 const kegiatanStore = useKegiatanStore();
-const runtimeConfig = useRuntimeConfig();
+const { getFirstImage, parseImageString } = useImageUtils();
+
+const getImageCount = (imageString: string | null | undefined): number => {
+  return parseImageString(imageString).length;
+};
+
+// Re-using the same options object definition for consistency
+const cardSplideOptions = {
+  type: 'slide', // Changed to 'slide'
+  rewind: true,
+  perPage: 1,
+  arrows: false,
+  pagination: true, // Enable default pagination
+  drag: true,
+  padding: '0',
+  gap: 0,
+  classes: {
+    pagination: 'splide__pagination !bottom-1.5',
+    page: 'splide__pagination__page !w-2 !h-2 !mx-0.5 !bg-white !opacity-50',
+  },
+};
 
 onMounted(() => {
   kegiatanStore.fetchKegiatanList();
 });
 </script>
+
+<style>
+/* Scoped or global styles for Splide pagination active dot if needed */
+/* Ensure these styles don't conflict if pages/kegiatan/index.vue is also loaded somehow,
+   though typically they are separate routes. If they can co-exist (e.g. in a layout for some reason),
+   consider more specific selectors or scoping. */
+.splide__pagination__page.is-active {
+  background-color: white !important;
+  opacity: 1 !important;
+  transform: scale(1.2);
+}
+</style>
