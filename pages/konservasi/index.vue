@@ -26,6 +26,12 @@ const cardSplideOptions = {
   // The default Splide CSS usually makes .splide { position: relative; }
   // and .splide__track { height: 100%; }
   // This should work with parent aspect-ratio.
+  classes: {
+    pagination: 'splide__pagination !bottom-1.5', // Position pagination at bottom
+    page: 'splide__pagination__page !w-2 !h-2 !mx-0.5 !bg-white !opacity-50', // Style for inactive dots
+    // Active dot styling is often controlled by .is-active class applied by Splide
+    // We can add specific style for .splide__pagination__page.is-active in <style> if needed
+  },
 };
 
 const handleSearch = (searchValue: string) => {
@@ -67,25 +73,26 @@ onBeforeRouteLeave((to, from, next) => {
       "
       class="grid w-full grid-cols-2 gap-4 xl:gap-6 3xl:gap-8 lg:grid-cols-3"
     >
-      <nuxt-link
+      <div
         v-for="plant in plantsStore.plantList"
-        :to="`/konservasi/${plant.id}`"
         :key="plant.id"
-        class="flex flex-col overflow-hidden shadow rounded-3xl relative"
+        class="flex flex-col overflow-hidden shadow rounded-3xl relative bg-white"
       >
-        <div class="w-full aspect-square bg-gray-200"> {/* Changed from aspect-[5/4] to aspect-square */}
+        {/* Image/Slider Area - Not linked by default, or could have its own separate link/action if desired */}
+        <div class="w-full aspect-square bg-gray-200">
           <Splide
             v-if="getImageCount(plant.gambar) > 1"
             :options="cardSplideOptions"
             :has-track="false"
             aria-label="Plant images"
+            class="w-full h-full"
           >
-            <SplideTrack>
+            <SplideTrack class="w-full h-full">
               <SplideSlide v-for="(image, index) in parseImageString(plant.gambar)" :key="index">
                 <img :src="image" :alt="`Gambar ${plant.nama_lokal || 'Tanaman'} ${index + 1}`" class="object-cover w-full h-full" />
               </SplideSlide>
             </SplideTrack>
-            <!-- Default pagination will be rendered by Splide if pagination:true -->
+            {/* Splide will auto-generate pagination based on options */}
           </Splide>
           <img
             v-else-if="getFirstImage(plant.gambar)"
@@ -150,8 +157,63 @@ onBeforeRouteLeave((to, from, next) => {
             </div>
           </div>
         </div>
-      </nuxt-link>
+      </nuxt-link>  --> {/* End of NuxtLink (commented out as it's being restructured) */}
+      {/* New NuxtLink wrapping text content */}
+      <NuxtLink :to="`/konservasi/${plant.id}`" class="block hover:bg-gray-50">
+        <div class="flex flex-col w-full p-2 space-y-1 md:space-y-2 md:p-4">
+          <div class="flex w-full space-x-2 font-semibold">
+            <div class="justify-between hidden w-5/12 lg:flex">
+              <span>Nama Ilmiah</span>
+              <span>:</span>
+            </div>
+            <div class="flex w-full lg:w-7/12">{{ plant.nama_ilmiah }}</div>
+          </div>
+
+          <div class="flex w-full space-x-2">
+            <div class="justify-between hidden w-5/12 lg:flex">
+              <span>Nama Lokal</span>
+              <span>:</span>
+            </div>
+            <div class="flex w-full lg:w-7/12">{{ plant.nama_lokal }}</div>
+          </div>
+
+          <div class="hidden w-full space-x-2 lg:flex">
+            <div class="flex justify-between w-5/12">
+              <span>Keluarga</span>
+              <span>:</span>
+            </div>
+            <div class="flex w-7/12">{{ plant.keluarga }}</div>
+          </div>
+
+          <div class="hidden w-full space-x-2 lg:flex">
+            <div class="flex justify-between w-5/12">
+              <span>Umur</span>
+              <span>:</span>
+            </div>
+            <div class="flex w-7/12">{{ plant.umur }}</div>
+          </div>
+
+          <div class="hidden w-full space-x-2 lg:flex">
+            <div class="flex justify-between w-5/12">
+              <span>Perawakan</span>
+              <span>:</span>
+            </div>
+            <div class="flex w-7/12">{{ plant.perawakan }}</div>
+          </div>
+
+          <div class="hidden w-full space-x-2 lg:flex" v-if="plant.category">
+            <div class="flex justify-between w-5/12">
+              <span>Kategori</span>
+              <span>:</span>
+            </div>
+            <div class="flex w-7/12">
+              {{ plant.category.nama_kategori }}
+            </div>
+          </div>
+        </div>
+      </NuxtLink>
     </div>
+  </div>
 
     <div v-else>Tidak ada data tanaman ditemukan.</div>
 
@@ -167,3 +229,13 @@ onBeforeRouteLeave((to, from, next) => {
     />
   </div>
 </template>
+
+<style>
+/* Scoped or global styles for Splide pagination active dot if needed */
+/* Targeting the card sliders' pagination specifically */
+.splide__pagination__page.is-active {
+  background-color: white !important; /* White background for active dot */
+  opacity: 1 !important; /* Full opacity for active dot */
+  transform: scale(1.2); /* Slightly larger active dot */
+}
+</style>
