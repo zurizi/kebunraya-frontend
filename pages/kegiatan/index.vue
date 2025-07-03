@@ -13,17 +13,15 @@ const searchText = ref("");
 
 // Re-using the same options object definition as in konservasi/index.vue for consistency
 const cardSplideOptions = {
-  type: 'fade',
+  type: 'slide', // Changed to 'slide'
   rewind: true,
   perPage: 1,
   arrows: false,
-  pagination: true,
+  pagination: true, // Enable default pagination
   drag: true,
-  // heightRatio: 0.8, // Relying on parent aspect-[5/4] - Ensure this is removed if present. It was commented.
-  classes: {
-    pagination: 'splide__pagination !bottom-1.5',
-    page: 'splide__pagination__page !w-2 !h-2 !mx-0.5 !bg-gray-400',
-  },
+  padding: '0',
+  gap: 0,
+  // Removed classes for pagination
 };
 
 const updatePage = (page: number) => {
@@ -73,7 +71,7 @@ onMounted(() => {
         :key="kegiatan.id"
         class="flex flex-col overflow-hidden shadow rounded-3xl relative"
       >
-        <div class="w-full aspect-[5/4] bg-gray-200">
+        <div class="w-full aspect-square bg-gray-200"> {/* Changed from aspect-[5/4] to aspect-square */}
           <Splide
             v-if="getImageCount(kegiatan.gambar) > 1"
             :options="cardSplideOptions"
@@ -85,7 +83,7 @@ onMounted(() => {
                 <img :src="image" :alt="`Gambar ${kegiatan.judul || 'Kegiatan'} ${index + 1}`" class="object-cover w-full h-full" />
               </SplideSlide>
             </SplideTrack>
-            <div class="splide__pagination !bottom-2"></div>
+            <!-- Default pagination will be rendered by Splide if pagination:true -->
           </Splide>
           <img
             v-else-if="getFirstImage(kegiatan.gambar)"

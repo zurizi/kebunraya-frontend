@@ -13,23 +13,19 @@ const { getFirstImage, parseImageString } = useImageUtils();
 const searchText = ref("");
 
 const cardSplideOptions = {
-  type: 'fade', // Or 'slide', 'loop'
+  type: 'slide', // Changed to 'slide' for robust behavior on cards
   rewind: true,
   perPage: 1,
-  arrows: false, // Usually no arrows on small cards
-  pagination: true, // Dots for navigation
+  arrows: false,
+  pagination: true, // Enable default pagination
   drag: true,
-  // heightRatio: 0.8, // Removed, relying on parent CSS for aspect ratio
-  // Ensure the container itself has aspect-[5/4] for this to work as expected, or set fixed height.
-  // The parent div class="w-full aspect-[5/4] bg-gray-200" handles the aspect ratio.
-  // Let's rely on the parent aspect ratio and ensure Splide takes full height of it.
-  // We can remove heightRatio if Splide correctly fills the aspect-[5/4] parent.
-  // For now, we'll keep it simple and let CSS handle the aspect ratio primarily.
-  // The key is that Splide's direct parent has the aspect ratio.
-  classes: {
-    pagination: 'splide__pagination !bottom-1.5', // Custom class for pagination position
-    page: 'splide__pagination__page !w-2 !h-2 !mx-0.5 !bg-gray-400', // Smaller dots
-  },
+  padding: '0', // No padding around the track/slides
+  gap: 0,       // No gap between slides
+  // Removed classes for pagination, will rely on default or style globally if needed
+  // Ensure Splide root element takes full height of its aspect-square parent.
+  // The default Splide CSS usually makes .splide { position: relative; }
+  // and .splide__track { height: 100%; }
+  // This should work with parent aspect-ratio.
 };
 
 const handleSearch = (searchValue: string) => {
@@ -77,7 +73,7 @@ onBeforeRouteLeave((to, from, next) => {
         :key="plant.id"
         class="flex flex-col overflow-hidden shadow rounded-3xl relative"
       >
-        <div class="w-full aspect-[5/4] bg-gray-200">
+        <div class="w-full aspect-square bg-gray-200"> {/* Changed from aspect-[5/4] to aspect-square */}
           <Splide
             v-if="getImageCount(plant.gambar) > 1"
             :options="cardSplideOptions"
@@ -89,8 +85,7 @@ onBeforeRouteLeave((to, from, next) => {
                 <img :src="image" :alt="`Gambar ${plant.nama_lokal || 'Tanaman'} ${index + 1}`" class="object-cover w-full h-full" />
               </SplideSlide>
             </SplideTrack>
-            <!-- Optional: Add custom pagination if default is too large for cards -->
-             <div class="splide__pagination !bottom-2"></div>
+            <!-- Default pagination will be rendered by Splide if pagination:true -->
           </Splide>
           <img
             v-else-if="getFirstImage(plant.gambar)"
