@@ -11,23 +11,35 @@
       class="grid grid-cols-1 gap-8 overflow-hidden bg-gray-100 border md:grid-cols-2 rounded-3xl"
     >
       <div class="md:col-span-1">
-        <Splide :options="splideOptions" aria-label="Plant Images" v-if="plantImages.length > 0">
+        <Splide
+          :options="splideOptions"
+          aria-label="Plant Images"
+          v-if="plantImages.length > 0"
+        >
           <SplideSlide v-for="(image, index) in plantImages" :key="index">
             <img
               :src="image"
-              :alt="`${plantsStore.plantDetail.nama_lokal || 'Tanaman'} - Gambar ${index + 1}`"
-              class="object-cover w-full h-full"  
+              :alt="`${
+                plantsStore.plantDetail.nama_lokal || 'Tanaman'
+              } - Gambar ${index + 1}`"
+              class="object-cover w-full h-full"
             />
           </SplideSlide>
         </Splide>
-        <div v-else class="flex items-center justify-center w-full h-64 text-gray-500 bg-gray-200 md:h-[500px]">
+        <div
+          v-else
+          class="flex items-center justify-center w-full h-64 text-gray-500 bg-gray-200 md:h-[500px]"
+        >
           <span>Belum ada gambar</span>
         </div>
       </div>
 
       <div class="px-4 py-6 space-y-6 md:col-span-1">
         <h1 class="mb-6 text-3xl font-bold text-green-900">
-          {{ plantsStore.plantDetail.nama_lokal || plantsStore.plantDetail.nama_ilmiah }}
+          {{
+            plantsStore.plantDetail.nama_lokal ||
+            plantsStore.plantDetail.nama_ilmiah
+          }}
         </h1>
         <div class="flex flex-col gap-4 text-sm text-gray-800">
           <div class="flex w-full">
@@ -44,9 +56,7 @@
           </div>
           <div class="flex w-full">
             <div class="w-1/3 font-semibold">Kategori</div>
-            <div class="w-2/3">
-              : {{ categoryName }}
-            </div>
+            <div class="w-2/3">: {{ categoryName }}</div>
           </div>
           <div class="flex w-full">
             <div class="w-1/3 font-semibold">Perawakan</div>
@@ -74,52 +84,51 @@
 import { createError, useRuntimeConfig } from "#app";
 import { useRoute } from "vue-router";
 import { onMounted, computed } from "vue";
-import { Splide, SplideSlide } from '@splidejs/vue-splide';
-import '@splidejs/vue-splide/css';
+import { Splide, SplideSlide } from "@splidejs/vue-splide";
+import "@splidejs/vue-splide/css";
 
 import { usePlantsStore } from "@/store/plants";
-import { useCategoriesStore } from "@/store/categories"; // Import categories store
-import { useImageUtils } from '~/composables/useImageUtils';
-import { storeToRefs } from 'pinia'; // Import storeToRefs
+import { useCategoriesStore } from "@/store/categories";
+import { useImageUtils } from "~/composables/useImageUtils";
+import { storeToRefs } from "pinia";
 
 const route = useRoute();
 const runtimeConfig = useRuntimeConfig();
 const plantsStore = usePlantsStore();
-const categoriesStore = useCategoriesStore(); // Initialize categories store
-const { categoryList } = storeToRefs(categoriesStore); // Get categoryList reactively
+const categoriesStore = useCategoriesStore();
+const { categoryList } = storeToRefs(categoriesStore);
 const { parseImageString } = useImageUtils();
 
 const plantId = route.params.id as string;
-const defaultPlaceholder = '/geometric-placeholder.svg'; // Will be changed later by another step
+const defaultPlaceholder = "/geometric-placeholder.svg";
 
 const categoryName = computed(() => {
   if (plantsStore.plantDetail?.category_id && categoryList.value.length) {
-    const foundCategory = categoryList.value.find(cat => cat.id === plantsStore.plantDetail.category_id);
+    const foundCategory = categoryList.value.find(
+      (cat) => cat.id == plantsStore.plantDetail.category_id
+    );
     return foundCategory ? foundCategory.nama_kategori : "Tidak Diketahui";
   }
-  // Fallback if category_id is missing on plantDetail, or if category is an object (older structure)
-  if (plantsStore.plantDetail?.category && typeof plantsStore.plantDetail.category === 'object') {
+
+  if (
+    plantsStore.plantDetail?.category &&
+    typeof plantsStore.plantDetail.category === "object"
+  ) {
     return plantsStore.plantDetail.category.nama_kategori || "Tidak Diketahui";
   }
-  return "Tidak Diketahui";
 });
 
 const splideOptions = computed(() => ({
-  type: plantImages.value.length > 1 ? 'loop' : 'slide', // Loop only if multiple images
+  type: plantImages.value.length > 1 ? "loop" : "slide",
   perPage: 1,
-  autoplay: plantImages.value.length > 1, // Autoplay only if multiple images
+  autoplay: plantImages.value.length > 1,
   interval: 5000,
   rewind: true,
   arrows: plantImages.value.length > 1,
   pagination: plantImages.value.length > 1,
-  height: '500px', // Fixed height for the slider area
-  // autoHeight: true, // Alternative if content height varies, but for images fixed height is often better
-  classes: { // Optional: if custom arrow styling from study-tour.vue is desired
-    // arrows: 'splide__arrows your-class-arrows',
-    // arrow : 'splide__arrow your-class-arrow',
-    // prev  : 'splide__arrow--prev your-class-prev',
-    // next  : 'splide__arrow--next your-class-next',
-  },
+  height: "500px",
+
+  classes: {},
 }));
 
 const plantImages = computed(() => {
@@ -140,15 +149,14 @@ onMounted(() => {
     }
   });
 });
-
 </script>
 <style>
 /* Replicating study-tour.vue arrow styles - adjust as needed */
 .splide__arrow {
   background-color: rgba(245, 245, 249, 0.8); /* Slightly transparent */
   font-size: 12px; /* This might not directly affect SVG icons, size is usually controlled by width/height */
-  width: 40px;   /* Adjust as needed */
-  height: 50px;  /* Adjust as needed */
+  width: 40px; /* Adjust as needed */
+  height: 50px; /* Adjust as needed */
   line-height: 50px; /* Vertically center icon if it's a font icon */
   transition: background-color 0.3s ease;
   opacity: 0.7;
@@ -171,13 +179,13 @@ onMounted(() => {
 
 .splide__pagination__page {
   background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(0,0,0,0.2);
+  border: 1px solid rgba(0, 0, 0, 0.2);
   opacity: 0.8;
 }
 .splide__pagination__page.is-active {
   background: #ffffff;
   transform: scale(1.2);
   opacity: 1;
-  border: 1px solid rgba(0,0,0,0.4);
+  border: 1px solid rgba(0, 0, 0, 0.4);
 }
 </style>

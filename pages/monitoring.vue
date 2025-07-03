@@ -336,9 +336,9 @@ const updateChartData = () => {
 const updateChartPointRadius = () => {
   if (typeof window !== 'undefined') { // Ensure window is defined (for SSR safety)
     if (window.innerWidth < 768) { // Mobile breakpoint
-      chartPointRadius.value = 6; // Larger radius for mobile
+      chartPointRadius.value = 8; // Larger radius for mobile
     } else {
-      chartPointRadius.value = 3; // Default radius for desktop
+      chartPointRadius.value = 7; // Default radius for desktop
     }
   }
 };
