@@ -27,7 +27,7 @@
         </div>
       </div>
     </nav>
-    <div class="flex">
+    <div class="relative flex w-full h-screen lg:overflow-hidden">
       <!-- Sidebar -->
       <div
         class="fixed inset-0 z-20 bg-black bg-opacity-25 lg:hidden"
