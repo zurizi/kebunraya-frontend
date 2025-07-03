@@ -334,8 +334,10 @@ const updateChartData = () => {
 };
 
 const updateChartPointRadius = () => {
-  if (typeof window !== 'undefined') { // Ensure window is defined (for SSR safety)
-    if (window.innerWidth < 768) { // Mobile breakpoint
+  if (typeof window !== "undefined") {
+    // Ensure window is defined (for SSR safety)
+    if (window.innerWidth < 768) {
+      // Mobile breakpoint
       chartPointRadius.value = 8; // Larger radius for mobile
     } else {
       chartPointRadius.value = 7; // Default radius for desktop
@@ -555,41 +557,32 @@ const exportExcel = async () => {
 };
 
 onMounted(() => {
-  // For chart point radius
-  if (typeof window !== 'undefined') {
-    updateChartPointRadius(); // Set initial radius
-    window.addEventListener('resize', updateChartPointRadius);
+  if (typeof window !== "undefined") {
+    updateChartPointRadius();
+    window.addEventListener("resize", updateChartPointRadius);
   }
 
-  // For export date initialization (existing logic from the file)
-  // Ensure 'startDate', 'endDate', 'settingDatesFromPeriod', 
-  // 'getStartAndEndOfCurrentMonth' are defined and accessible.
-  const initialDates = getStartAndEndOfCurrentMonth(); // This function must be defined
+  const initialDates = getStartAndEndOfCurrentMonth();
   startDate.value = initialDates.start;
   endDate.value = initialDates.end;
-  settingDatesFromPeriod.value = true; 
+  settingDatesFromPeriod.value = true;
   setTimeout(() => {
     settingDatesFromPeriod.value = false;
   }, 0);
-  // console.log("Initial dates set for export:", startDate.value, endDate.value); // console.log removed for cleaner code
 
-  // For data fetching (existing logic from the file)
   monitoringStore.fetchLatestData();
   if (!monitoringStore.weeklyDashboardData) {
     monitoringStore.fetchWeeklyDashboardData().then(() => {
-      // updateChartData() will be called by the watcher for weeklyDashboardData,
-      // or the new watcher for chartPointRadius if it changes.
+      updateChartData()
     });
   } else {
-     // If data is already present, existing watchers should handle chart update.
-     // Call updateChartData() explicitly if necessary to ensure initial render with correct radius.
-     updateChartData();
+    updateChartData();
   }
 });
 
 onBeforeUnmount(() => {
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('resize', updateChartPointRadius);
+  if (typeof window !== "undefined") {
+    window.removeEventListener("resize", updateChartPointRadius);
   }
 });
 
