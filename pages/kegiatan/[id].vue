@@ -11,21 +11,17 @@
       class="grid grid-cols-1 gap-8 overflow-hidden bg-gray-100 border md:grid-cols-2 rounded-3xl"
     >
       <div class="md:col-span-1">
-        <Splide :options="{ rewind: true, arrows: kegiatanImages.length > 1, pagination: kegiatanImages.length > 1 }" aria-label="Kegiatan Images" v-if="kegiatanImages.length > 0">
+        <Splide :options="splideOptions" aria-label="Kegiatan Images" v-if="kegiatanImages.length > 0">
           <SplideSlide v-for="(image, index) in kegiatanImages" :key="index">
             <img
               :src="image"
               :alt="`${kegiatanStore.kegiatanDetail.judul || 'Kegiatan'} - Gambar ${index + 1}`"
-              class="object-cover w-full h-64 md:h-[500px]"
+              class="object-cover w-full h-full"
             />
           </SplideSlide>
         </Splide>
-        <div v-else class="flex items-center justify-center w-full h-64 bg-gray-200 md:h-full">
-          <img
-            :src="defaultPlaceholder"
-            alt="Tidak ada gambar"
-            class="object-contain w-1/2 h-1/2 opacity-50"
-          />
+        <div v-else class="flex items-center justify-center w-full h-64 text-gray-500 bg-gray-200 md:h-[500px]">
+          <span>Belum ada gambar</span>
         </div>
       </div>
 
@@ -59,12 +55,12 @@
 </template>
 
 <script lang="ts" setup>
-import { createError, useRuntimeConfig } from "#app"; // Removed onBeforeRouteLeave
+import { createError, useRuntimeConfig } from "#app";
 import { useRoute } from "vue-router";
 import { useKegiatanStore } from "@/store/kegiatan";
-import { onMounted, computed } from "vue"; // Added computed
+import { onMounted, computed } from "vue";
 import { Splide, SplideSlide } from '@splidejs/vue-splide';
-import '@splidejs/vue-splide/css/core';
+import '@splidejs/vue-splide/css'; // Changed to default theme CSS
 import { useImageUtils } from '~/composables/useImageUtils';
 
 
@@ -74,7 +70,18 @@ const kegiatanStore = useKegiatanStore();
 const { parseImageString } = useImageUtils();
 
 const kegiatanId = route.params.id as string;
-const defaultPlaceholder = '/geometric-placeholder.svg';
+const defaultPlaceholder = '/geometric-placeholder.svg'; // Will be changed later
+
+const splideOptions = computed(() => ({
+  type: kegiatanImages.value.length > 1 ? 'loop' : 'slide',
+  perPage: 1,
+  autoplay: kegiatanImages.value.length > 1,
+  interval: 5000,
+  rewind: true,
+  arrows: kegiatanImages.value.length > 1,
+  pagination: kegiatanImages.value.length > 1,
+  height: '500px',
+}));
 
 const kegiatanImages = computed(() => {
   if (kegiatanStore.kegiatanDetail && kegiatanStore.kegiatanDetail.gambar) {
@@ -84,7 +91,6 @@ const kegiatanImages = computed(() => {
 });
 
 onMounted(() => {
-  // kegiatanStore.resetKegiatanDetail(); // Consider if this is needed if navigating between detail pages
   kegiatanStore.fetchKegiatanDetail(kegiatanId).then(() => {
     if (!kegiatanStore.kegiatanDetail && !kegiatanStore.kegiatanDetailPending) {
       throw createError({
@@ -97,3 +103,40 @@ onMounted(() => {
 });
 
 </script>
+<style>
+/* Mirroring styles from konservasi page for consistency */
+.splide__arrow {
+  background-color: rgba(245, 245, 249, 0.8);
+  width: 40px;
+  height: 50px;
+  transition: background-color 0.3s ease;
+  opacity: 0.7;
+}
+
+.splide__arrow:hover {
+  background-color: rgba(255, 255, 255, 1);
+  opacity: 1;
+}
+
+.splide__arrow--next {
+  right: 0.5em;
+  border-radius: 8px 0 0 8px;
+}
+
+.splide__arrow--prev {
+  left: 0.5em;
+  border-radius: 0 8px 8px 0;
+}
+
+.splide__pagination__page {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0,0,0,0.2);
+  opacity: 0.8;
+}
+.splide__pagination__page.is-active {
+  background: #ffffff;
+  transform: scale(1.2);
+  opacity: 1;
+  border: 1px solid rgba(0,0,0,0.4);
+}
+</style>

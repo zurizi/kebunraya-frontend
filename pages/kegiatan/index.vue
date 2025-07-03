@@ -7,7 +7,7 @@ import { useImageUtils } from '~/composables/useImageUtils';
 const kegiatanStore = useKegiatanStore();
 // const runtimeConfig = useRuntimeConfig(); // No longer directly needed
 const { getFirstImage, parseImageString } = useImageUtils();
-const defaultPlaceholder = '/geometric-placeholder.svg';
+// const defaultPlaceholder = '/geometric-placeholder.svg'; // No longer needed
 
 
 const searchText = ref("");
@@ -59,12 +59,14 @@ onMounted(() => {
         :key="kegiatan.id"
         class="flex flex-col overflow-hidden shadow rounded-3xl relative"
       >
-        <div class="w-full aspect-[5/4] bg-gray-200">
+        <div class="w-full aspect-[5/4] bg-gray-200 flex items-center justify-center">
           <img
-            :src="getFirstImage(kegiatan.gambar) || defaultPlaceholder"
+            v-if="getFirstImage(kegiatan.gambar)"
+            :src="getFirstImage(kegiatan.gambar)!"
             :alt="`Gambar ${kegiatan.judul || 'Kegiatan'}`"
             class="object-cover w-full h-full"
           />
+          <span v-else class="text-gray-500 text-sm">Belum ada gambar</span>
         </div>
         <div v-if="getImageCount(kegiatan.gambar) > 1"
              class="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-full flex items-center">
