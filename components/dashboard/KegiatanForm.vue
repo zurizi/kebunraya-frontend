@@ -231,27 +231,32 @@ function submitForm() {
   }
 
   const submissionData = new FormData();
+
   submissionData.append('judul', form.value.judul);
-  submissionData.append('tanggal', form.value.tanggal);
-  submissionData.append('lokasi', form.value.lokasi);
-  submissionData.append('deskripsi', form.value.deskripsi);
+
+  // Handle tanggal - send empty if not filled, do not default to "-"
+  if (form.value.tanggal) {
+    submissionData.append('tanggal', form.value.tanggal);
+  } else {
+    submissionData.append('tanggal', ''); // Or handle as per backend expectation for optional date
+  }
+
+  submissionData.append('lokasi', (form.value.lokasi === '' || form.value.lokasi === null) ? '-' : form.value.lokasi);
+  submissionData.append('deskripsi', (form.value.deskripsi === '' || form.value.deskripsi === null) ? '-' : form.value.deskripsi);
 
   // Append new image files
   if (form.value.gambar && form.value.gambar.length > 0) {
     form.value.gambar.forEach((file) => {
-      submissionData.append('gambar[]', file); // Use 'gambar[]' for array of files
+      if (file instanceof File) { // Ensure only File objects are appended
+        submissionData.append('gambar[]', file);
+      }
     });
-  } else if (props.isEditMode && (!form.value.gambar || form.value.gambar.length === 0)) {
-    // If in edit mode and no new files are selected,
-    // we might need to tell the backend to keep existing images.
-    // This is often handled by *not* sending the 'gambar' field at all,
-    // or sending a specific signal e.g. `gambar_is_cleared: true/false`.
-    // For now, if no new images, 'gambar[]' won't be appended.
-    // If initialData.gambar existed and user selected no new files,
-    // and the intention is to *remove* all images, that needs explicit handling.
-    // The current setup implies: new files replace old ones. No new files = keep old ones (if backend supports this).
   }
-
+  // Note: Logic for handling existing images in edit mode (keeping/removing them)
+  // is typically managed by how the backend interprets the absence or presence of 'gambar[]'.
+  // If 'gambar[]' is absent, backend might keep existing. If 'gambar[]' is present with new files, it might replace.
+  // If all images need to be cleared, a separate flag like 'clear_images=true' might be needed.
+  // This implementation assumes replacement if new images are sent, and keeping existing if no new images are sent.
 
   emit('submit', submissionData);
 }

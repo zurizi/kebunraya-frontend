@@ -29,20 +29,22 @@
             v-for="kegiatan in kegiatanStore.kegiatanList.slice(0, 4)"
             :to="`/kegiatan/${kegiatan.id}`"
             :key="kegiatan.id"
-            class="flex flex-col overflow-hidden bg-white shadow rounded-3xl"
+            class="flex flex-col overflow-hidden bg-white shadow rounded-3xl relative"
           >
-            <img
-              :src="
-                kegiatan.gambar
-                  ? `${
-                      runtimeConfig.public.imgURL ||
-                      runtimeConfig.public.imageCDN
-                    }/${kegiatan.gambar}`
-                  : '/placeholder-image.jpg'
-              "
-              :alt="`Gambar ${kegiatan.judul || 'Kegiatan'}`"
-              class="object-cover w-full h-24 sm:h-48 xl:h-64"
-            />
+            <div class="w-full aspect-[5/4] bg-gray-200"> <!-- Maintain 5:4 aspect ratio -->
+              <img
+                :src="getFirstImage(kegiatan.gambar) || defaultPlaceholder"
+                :alt="`Gambar ${kegiatan.judul || 'Kegiatan'}`"
+                class="object-cover w-full h-full"
+              />
+            </div>
+            <div v-if="getImageCount(kegiatan.gambar) > 1"
+                 class="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-full flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              {{ getImageCount(kegiatan.gambar) }}
+            </div>
 
             <div class="flex flex-col w-full p-4 space-y-2">
               <div
@@ -73,10 +75,17 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { useKegiatanStore } from "@/store/kegiatan";
-import { useRuntimeConfig } from "#app";
+// import { useRuntimeConfig } from "#app"; // No longer directly used for image URL
+import { useImageUtils } from '~/composables/useImageUtils';
 
 const kegiatanStore = useKegiatanStore();
-const runtimeConfig = useRuntimeConfig();
+// const runtimeConfig = useRuntimeConfig(); // No longer directly used
+const { getFirstImage, parseImageString } = useImageUtils();
+const defaultPlaceholder = '/geometric-placeholder.svg';
+
+const getImageCount = (imageString: string | null | undefined): number => {
+  return parseImageString(imageString).length;
+};
 
 onMounted(() => {
   kegiatanStore.fetchKegiatanList();

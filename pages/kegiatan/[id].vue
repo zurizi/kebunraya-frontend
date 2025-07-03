@@ -11,15 +11,22 @@
       class="grid grid-cols-1 gap-8 overflow-hidden bg-gray-100 border md:grid-cols-2 rounded-3xl"
     >
       <div class="md:col-span-1">
-        <img
-          :src="
-            kegiatanStore.kegiatanDetail.gambar
-              ? `${runtimeConfig.public.imgURL}/${kegiatanStore.kegiatanDetail.gambar}`
-              : '/placeholder-image.jpg'
-          "
-          :alt="`Gambar ${kegiatanStore.kegiatanDetail.judul || 'Kegiatan'}`"
-          class="object-cover w-full h-64 md:h-full"
-        />
+        <Splide :options="{ rewind: true, arrows: kegiatanImages.length > 1, pagination: kegiatanImages.length > 1 }" aria-label="Kegiatan Images" v-if="kegiatanImages.length > 0">
+          <SplideSlide v-for="(image, index) in kegiatanImages" :key="index">
+            <img
+              :src="image"
+              :alt="`${kegiatanStore.kegiatanDetail.judul || 'Kegiatan'} - Gambar ${index + 1}`"
+              class="object-cover w-full h-64 md:h-[500px]"
+            />
+          </SplideSlide>
+        </Splide>
+        <div v-else class="flex items-center justify-center w-full h-64 bg-gray-200 md:h-full">
+          <img
+            :src="defaultPlaceholder"
+            alt="Tidak ada gambar"
+            class="object-contain w-1/2 h-1/2 opacity-50"
+          />
+        </div>
       </div>
 
       <div class="px-4 py-6 space-y-6 md:col-span-1">
@@ -52,20 +59,34 @@
 </template>
 
 <script lang="ts" setup>
-import { createError, useRuntimeConfig, onBeforeRouteLeave } from "#app";
+import { createError, useRuntimeConfig } from "#app"; // Removed onBeforeRouteLeave
 import { useRoute } from "vue-router";
 import { useKegiatanStore } from "@/store/kegiatan";
-import { onMounted } from "vue";
+import { onMounted, computed } from "vue"; // Added computed
+import { Splide, SplideSlide } from '@splidejs/vue-splide';
+import '@splidejs/vue-splide/css/core';
+import { useImageUtils } from '~/composables/useImageUtils';
+
 
 const route = useRoute();
-const runtimeConfig = useRuntimeConfig();
+const runtimeConfig = useRuntimeConfig(); // Already here
 const kegiatanStore = useKegiatanStore();
+const { parseImageString } = useImageUtils();
 
 const kegiatanId = route.params.id as string;
+const defaultPlaceholder = '/geometric-placeholder.svg';
+
+const kegiatanImages = computed(() => {
+  if (kegiatanStore.kegiatanDetail && kegiatanStore.kegiatanDetail.gambar) {
+    return parseImageString(kegiatanStore.kegiatanDetail.gambar);
+  }
+  return [];
+});
 
 onMounted(() => {
+  // kegiatanStore.resetKegiatanDetail(); // Consider if this is needed if navigating between detail pages
   kegiatanStore.fetchKegiatanDetail(kegiatanId).then(() => {
-    if (!kegiatanStore.kegiatanDetail) {
+    if (!kegiatanStore.kegiatanDetail && !kegiatanStore.kegiatanDetailPending) {
       throw createError({
         statusCode: 404,
         statusMessage: "Kegiatan tidak ditemukan.",
@@ -75,7 +96,4 @@ onMounted(() => {
   });
 });
 
-// onBeforeRouteLeave(() => {
-//   kegiatanStore.resetStateDetail();
-// });
 </script>

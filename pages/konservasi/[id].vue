@@ -11,20 +11,27 @@
       class="grid grid-cols-1 gap-8 overflow-hidden bg-gray-100 border md:grid-cols-2 rounded-3xl"
     >
       <div class="md:col-span-1">
-        <img
-          :src="
-            plantsStore.plantDetail.gambar
-              ? `${runtimeConfig.public.imgURL}/${plantsStore.plantDetail.gambar}`
-              : '/placeholder-image.jpg'
-          "
-          :alt="`Gambar ${plantsStore.plantDetail.nama_lokal || 'Tanaman'}`"
-          class="object-cover w-full h-64 md:h-full"
-        />
+        <Splide :options="{ rewind: true, arrows: plantImages.length > 1, pagination: plantImages.length > 1 }" aria-label="Plant Images" v-if="plantImages.length > 0">
+          <SplideSlide v-for="(image, index) in plantImages" :key="index">
+            <img
+              :src="image"
+              :alt="`${plantsStore.plantDetail.nama_lokal || 'Tanaman'} - Gambar ${index + 1}`"
+              class="object-cover w-full h-64 md:h-[500px]"
+            />
+          </SplideSlide>
+        </Splide>
+        <div v-else class="flex items-center justify-center w-full h-64 bg-gray-200 md:h-full">
+          <img
+            :src="defaultPlaceholder"
+            alt="Tidak ada gambar"
+            class="object-contain w-1/2 h-1/2 opacity-50"
+          />
+        </div>
       </div>
 
       <div class="px-4 py-6 space-y-6 md:col-span-1">
         <h1 class="mb-6 text-3xl font-bold text-green-900">
-          {{ plantsStore.plantDetail.nama_lokal }}
+          {{ plantsStore.plantDetail.nama_lokal || plantsStore.plantDetail.nama_ilmiah }}
         </h1>
         <div class="flex flex-col gap-4 text-sm text-gray-800">
           <div class="flex w-full">
@@ -72,21 +79,34 @@
 </template>
 
 <script lang="ts" setup>
-import { createError, useRuntimeConfig, onBeforeRouteLeave } from "#app";
+import { createError, useRuntimeConfig } from "#app"; // Removed onBeforeRouteLeave
 import { useRoute } from "vue-router";
-import { onMounted } from "vue";
+import { onMounted, computed } from "vue"; // Added computed
+import { Splide, SplideSlide } from '@splidejs/vue-splide';
+import '@splidejs/vue-splide/css/core'; // Using core CSS, can choose other themes if needed
 
 import { usePlantsStore } from "@/store/plants";
+import { useImageUtils } from '~/composables/useImageUtils';
 
 const route = useRoute();
-const runtimeConfig = useRuntimeConfig();
+const runtimeConfig = useRuntimeConfig(); // Already here
 const plantsStore = usePlantsStore();
+const { parseImageString } = useImageUtils();
 
 const plantId = route.params.id as string;
+const defaultPlaceholder = '/geometric-placeholder.svg';
+
+
+const plantImages = computed(() => {
+  if (plantsStore.plantDetail && plantsStore.plantDetail.gambar) {
+    return parseImageString(plantsStore.plantDetail.gambar);
+  }
+  return [];
+});
 
 onMounted(() => {
   plantsStore.fetchPlantDetail(plantId).then(() => {
-    if ( !plantsStore.plantDetail) {
+    if (!plantsStore.plantDetail && !plantsStore.plantDetailPending) { // check pending to avoid premature 404
       throw createError({
         statusCode: 404,
         statusMessage: "Tanaman tidak ditemukan.",

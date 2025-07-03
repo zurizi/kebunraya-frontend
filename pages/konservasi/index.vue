@@ -1,16 +1,23 @@
 <script setup lang="ts">
 import { usePlantsStore } from "@/store/plants";
-import { useRuntimeConfig } from "#app";
+// import { useRuntimeConfig } from "#app"; // No longer directly needed here for image URL construction
 import { onMounted, ref } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
+import { useImageUtils } from '~/composables/useImageUtils';
 
 const plantsStore = usePlantsStore();
-const runtimeConfig = useRuntimeConfig();
+// const runtimeConfig = useRuntimeConfig(); // No longer directly needed here
+const { getFirstImage, parseImageString } = useImageUtils();
+const defaultPlaceholder = '/geometric-placeholder.svg';
 
 const searchText = ref("");
 
 const handleSearch = (searchValue: string) => {
   plantsStore.setSearchText(searchValue);
+};
+
+const getImageCount = (imageString: string | null | undefined): number => {
+  return parseImageString(imageString).length;
 };
 
 onMounted(() => {
@@ -48,20 +55,21 @@ onBeforeRouteLeave((to, from, next) => {
         v-for="plant in plantsStore.plantList"
         :to="`/konservasi/${plant.id}`"
         :key="plant.id"
-        class="flex flex-col overflow-hidden shadow rounded-3xl"
+        class="flex flex-col overflow-hidden shadow rounded-3xl relative"
       >
-        <div class="w-full aspect-[5/4] bg-gray-200"> <!-- Aspect ratio container -->
+        <div class="w-full aspect-[5/4] bg-gray-200">
           <img
-            :src="
-              plant.gambar
-                ? `${
-                    runtimeConfig.public.imgURL || runtimeConfig.public.imageCDN
-                  }/${plant.gambar}`
-                : '/geometric-placeholder.svg'
-            "
+            :src="getFirstImage(plant.gambar) || defaultPlaceholder"
             :alt="`Gambar ${plant.nama_lokal || 'Tanaman'}`"
-            class="object-cover w-full h-full" <!-- Fill container -->
+            class="object-cover w-full h-full"
           />
+        </div>
+        <div v-if="getImageCount(plant.gambar) > 1"
+             class="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-full flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          {{ getImageCount(plant.gambar) }}
         </div>
 
         <div class="flex flex-col w-full p-2 space-y-1 md:space-y-2 md:p-4">

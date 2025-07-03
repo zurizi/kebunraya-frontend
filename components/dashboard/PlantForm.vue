@@ -206,7 +206,23 @@ const handleSubmit = () => {
   }
   // Create a plain object copy for submission, especially if not using FormData for everything
   // For FormData usage as in the store, passing `formData` (the reactive proxy) is fine.
-  emit('submit', { ...formData }); 
+  const submissionData = { ...formData };
+  const fieldsToDefaultDash = ['nama_lokal', 'keluarga', 'umur', 'perawakan', 'persebaran', 'deskripsi'];
+
+  fieldsToDefaultDash.forEach(field => {
+    if (submissionData[field] === '' || submissionData[field] === null || submissionData[field] === undefined) {
+      submissionData[field] = '-';
+    }
+  });
+
+  // Ensure gambar is an array of files, not preview URLs or mixed content
+  if (Array.isArray(submissionData.gambar)) {
+    submissionData.gambar = submissionData.gambar.filter(item => item instanceof File);
+  } else {
+    submissionData.gambar = []; // Ensure it's an array even if initially null or something else
+  }
+
+  emit('submit', submissionData);
 };
 
 // Expose resetForm to be called by parent if needed (e.g. after successful submit from parent view)

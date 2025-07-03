@@ -43,7 +43,8 @@ onMounted(() => {
 })
 
 const showMonitoringAlert = async () => {
-  if (route.path === '/login') {
+  // Do not show the alert on /login or any /dashboard/* routes
+  if (route.path === '/login' || route.path.startsWith('/dashboard')) {
     // If a swal is open (e.g. loading), close it before returning
     if ($swal.isVisible()) {
       $swal.close();
