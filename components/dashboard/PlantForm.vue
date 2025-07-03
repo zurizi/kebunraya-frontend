@@ -4,19 +4,19 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
         <div>
           <label for="nama_ilmiah" class="block text-sm font-medium text-gray-700">Nama Ilmiah</label>
-          <input type="text" id="nama_ilmiah" v-model="formData.nama_ilmiah" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+          <input type="text" id="nama_ilmiah" v-model="formData.nama_ilmiah" required class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
         </div>
         <div>
           <label for="nama_lokal" class="block text-sm font-medium text-gray-700">Nama Lokal</label>
-          <input type="text" id="nama_lokal" v-model="formData.nama_lokal" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+          <input type="text" id="nama_lokal" v-model="formData.nama_lokal" class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
         </div>
         <div>
           <label for="keluarga" class="block text-sm font-medium text-gray-700">Keluarga</label>
-          <input type="text" id="keluarga" v-model="formData.keluarga" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+          <input type="text" id="keluarga" v-model="formData.keluarga" class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
         </div>
         <div>
           <label for="umur" class="block text-sm font-medium text-gray-700">Umur</label>
-          <input type="text" id="umur" v-model="formData.umur" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+          <input type="text" id="umur" v-model="formData.umur" class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
         </div>
          <div>
           <label for="category_id" class="block text-sm font-medium text-gray-700">Kategori</label>
@@ -25,7 +25,7 @@
             v-model="formData.category_id"
             :disabled="categoryListPending"
             required
-            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+            class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
           >
             <option value="" disabled>-- Pilih Kategori --</option> <!-- Removed 'selected' here as v-model handles it -->
             <option v-for="category in categoryList" :key="category.id" :value="category.id">
@@ -39,18 +39,18 @@
         </div>
         <div>
           <label for="perawakan" class="block text-sm font-medium text-gray-700">Perawakan</label>
-          <input type="text" id="perawakan" v-model="formData.perawakan" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+          <input type="text" id="perawakan" v-model="formData.perawakan" class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
         </div>
       </div>
 
       <div>
         <label for="persebaran" class="block text-sm font-medium text-gray-700">Persebaran</label>
-        <input type="text" id="persebaran" v-model="formData.persebaran" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+        <input type="text" id="persebaran" v-model="formData.persebaran" class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
       </div>
 
       <div>
         <label for="deskripsi" class="block text-sm font-medium text-gray-700">Deskripsi</label>
-        <textarea id="deskripsi" v-model="formData.deskripsi" rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"></textarea>
+        <textarea id="deskripsi" v-model="formData.deskripsi" rows="4" class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"></textarea>
       </div>
 
       <div>
@@ -61,17 +61,17 @@
           multiple
           @change="handleImageChange"
           accept="image/png, image/jpeg, image/gif"
-          class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+          class="block w-full mt-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
         >
-        <div v-if="imagePreviewUrls.length" class="mt-2 grid grid-cols-3 gap-2">
+        <div v-if="imagePreviewUrls.length" class="grid grid-cols-3 gap-2 mt-2">
           <div v-for="(url, index) in imagePreviewUrls" :key="index" class="relative">
-            <img :src="url" alt="Preview Gambar Tanaman" class="max-h-40 w-auto rounded border p-1 shadow-sm" />
+            <img :src="url" alt="Preview Gambar Tanaman" class="w-auto p-1 border rounded shadow-sm max-h-40" />
           </div>
         </div>
       </div>
     </div>
 
-    <div class="mt-6 flex justify-end space-x-3">
+    <div class="flex justify-end mt-6 space-x-3">
       <button type="button" @click="$emit('close')" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
         Batal
       </button>

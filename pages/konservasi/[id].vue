@@ -16,7 +16,7 @@
             <img
               :src="image"
               :alt="`${plantsStore.plantDetail.nama_lokal || 'Tanaman'} - Gambar ${index + 1}`"
-              class="object-cover w-full h-full"   કર્મ Corrected to h-full to respect Splide's height option
+              class="object-cover w-full h-full"  
             />
           </SplideSlide>
         </Splide>

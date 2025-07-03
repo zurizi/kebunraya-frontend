@@ -1,7 +1,7 @@
 <template>
   <section id="acara">
     <div
-      class="flex flex-col w-full px-8 space-y-4 sm:px-14 md:px-18   lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
+      class="flex flex-col w-full px-8 space-y-4 sm:px-14 md:px-18 lg:px-20 xl:px-24 2xl:px-28 3xl:px-32"
     >
       <div class="text-xl font-semibold">Jangan Lewatkan Acara Kami</div>
       <p>
@@ -28,10 +28,9 @@
           <div
             v-for="kegiatan in kegiatanStore.kegiatanList.slice(0, 4)"
             :key="kegiatan.id"
-            class="flex flex-col overflow-hidden bg-white shadow rounded-3xl relative"
+            class="relative flex flex-col overflow-hidden bg-white shadow rounded-3xl"
           >
-            {/* Image/Slider Area */}
-            <div class="w-full aspect-square bg-gray-200">
+            <div class="w-full bg-gray-200 aspect-square">
               <Splide
                 v-if="getImageCount(kegiatan.gambar) > 1"
                 :options="cardSplideOptions"
@@ -44,7 +43,6 @@
                     <img :src="image" :alt="`Gambar ${kegiatan.judul || 'Kegiatan'} ${index + 1}`" class="object-cover w-full h-full" />
                   </SplideSlide>
                 </SplideTrack>
-                {/* Splide will auto-generate pagination based on options */}
               </Splide>
               <img
                 v-else-if="getFirstImage(kegiatan.gambar)"
@@ -53,7 +51,7 @@
                 class="object-cover w-full h-full"
               />
               <div v-else class="flex items-center justify-center w-full h-full">
-                <span class="text-gray-500 text-sm">Belum ada gambar</span>
+                <span class="text-sm text-gray-500">Belum ada gambar</span>
               </div>
             </div>
             <!-- Removed multiple image count indicator -->
