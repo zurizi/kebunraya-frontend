@@ -4,13 +4,33 @@ import { usePlantsStore } from "@/store/plants";
 import { onMounted, ref } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
 import { useImageUtils } from '~/composables/useImageUtils';
+import { Splide, SplideSlide, SplideTrack } from '@splidejs/vue-splide';
+import '@splidejs/vue-splide/css'; // Import Splide's default CSS
 
 const plantsStore = usePlantsStore();
-// const runtimeConfig = useRuntimeConfig(); // No longer directly needed here
 const { getFirstImage, parseImageString } = useImageUtils();
-// const defaultPlaceholder = '/geometric-placeholder.svg'; // No longer needed
 
 const searchText = ref("");
+
+const cardSplideOptions = {
+  type: 'fade', // Or 'slide', 'loop'
+  rewind: true,
+  perPage: 1,
+  arrows: false, // Usually no arrows on small cards
+  pagination: true, // Dots for navigation
+  drag: true,
+  // heightRatio: 0.8, // Removed, relying on parent CSS for aspect ratio
+  // Ensure the container itself has aspect-[5/4] for this to work as expected, or set fixed height.
+  // The parent div class="w-full aspect-[5/4] bg-gray-200" handles the aspect ratio.
+  // Let's rely on the parent aspect ratio and ensure Splide takes full height of it.
+  // We can remove heightRatio if Splide correctly fills the aspect-[5/4] parent.
+  // For now, we'll keep it simple and let CSS handle the aspect ratio primarily.
+  // The key is that Splide's direct parent has the aspect ratio.
+  classes: {
+    pagination: 'splide__pagination !bottom-1.5', // Custom class for pagination position
+    page: 'splide__pagination__page !w-2 !h-2 !mx-0.5 !bg-gray-400', // Smaller dots
+  },
+};
 
 const handleSearch = (searchValue: string) => {
   plantsStore.setSearchText(searchValue);
@@ -57,22 +77,32 @@ onBeforeRouteLeave((to, from, next) => {
         :key="plant.id"
         class="flex flex-col overflow-hidden shadow rounded-3xl relative"
       >
-        <div class="w-full aspect-[5/4] bg-gray-200 flex items-center justify-center">
+        <div class="w-full aspect-[5/4] bg-gray-200">
+          <Splide
+            v-if="getImageCount(plant.gambar) > 1"
+            :options="cardSplideOptions"
+            :has-track="false"
+            aria-label="Plant images"
+          >
+            <SplideTrack>
+              <SplideSlide v-for="(image, index) in parseImageString(plant.gambar)" :key="index">
+                <img :src="image" :alt="`Gambar ${plant.nama_lokal || 'Tanaman'} ${index + 1}`" class="object-cover w-full h-full" />
+              </SplideSlide>
+            </SplideTrack>
+            <!-- Optional: Add custom pagination if default is too large for cards -->
+             <div class="splide__pagination !bottom-2"></div>
+          </Splide>
           <img
-            v-if="getFirstImage(plant.gambar)"
+            v-else-if="getFirstImage(plant.gambar)"
             :src="getFirstImage(plant.gambar)!"
             :alt="`Gambar ${plant.nama_lokal || 'Tanaman'}`"
             class="object-cover w-full h-full"
           />
-          <span v-else class="text-gray-500 text-sm">Belum ada gambar</span>
+          <div v-else class="flex items-center justify-center w-full h-full">
+            <span class="text-gray-500 text-sm">Belum ada gambar</span>
+          </div>
         </div>
-        <div v-if="getImageCount(plant.gambar) > 1"
-             class="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-full flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-          {{ getImageCount(plant.gambar) }}
-        </div>
+        <!-- Removed multiple image count indicator as slider handles this -->
 
         <div class="flex flex-col w-full p-2 space-y-1 md:space-y-2 md:p-4">
           <div class="flex w-full space-x-2 font-semibold">

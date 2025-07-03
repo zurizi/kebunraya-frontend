@@ -37,13 +37,20 @@
         >
           <!-- Custom Cell Slots -->
           <template #gambar="{ row }">
-            <img
-              v-if="row.gambar"
-              :src="getFullImageUrl(row.gambar)"
-              alt="Tanaman"
-              class="object-cover w-20 h-10 rounded"
-            />
-            <span v-else>Tidak ada gambar</span>
+            <div class="relative w-20 h-16">
+              <img
+                v-if="getFirstImage(row.gambar)"
+                :src="getFirstImage(row.gambar)!"
+                alt="Tanaman"
+                class="object-cover w-full h-full rounded"
+              />
+              <span v-else class="flex items-center justify-center w-full h-full text-xs text-gray-500 bg-gray-100 rounded">Belum ada gambar</span>
+              <div v-if="parseImageString(row.gambar).length > 1"
+                   class="absolute bottom-0 right-0 px-1 py-0.5 text-xs text-white bg-black bg-opacity-60 rounded-tl-md rounded-br-md"
+                   :title="`${parseImageString(row.gambar).length} images`">
+                +{{ parseImageString(row.gambar).length - 1 }}
+              </div>
+            </div>
           </template>
           <template #category="{ row }">
             {{ row.category && row.category.nama_kategori ? row.category.nama_kategori : 'N/A' }}
@@ -119,20 +126,22 @@
 <script setup lang="ts">
 import { usePlantsStore } from '~/store/plants';
 import { storeToRefs } from 'pinia';
-import { onMounted, ref, watch } from 'vue'; // Added watch, removed watchDebounced
+import { onMounted, ref, watch } from 'vue';
 import BaseTable from '~/components/Table/BaseTable.vue';
 import Pagination from '~/components/Pagination.vue';
-import { useRuntimeConfig, useNuxtApp } from "#app"; // Add useNuxtApp
+import { useNuxtApp } from "#app";
 import Modal from '~/components/Modal.vue';
 import PlantForm from '~/components/dashboard/PlantForm.vue';
+import { useImageUtils } from '~/composables/useImageUtils'; // Import useImageUtils
 
 definePageMeta({
   layout: 'dashboard',
 });
 
-const runtimeConfig = useRuntimeConfig();
+// const runtimeConfig = useRuntimeConfig(); // No longer needed directly for image URL here
+const { getFirstImage, parseImageString } = useImageUtils(); // Destructure utils
 const plantsStore = usePlantsStore();
-const nuxtApp = useNuxtApp(); // Get nuxtApp instance
+const nuxtApp = useNuxtApp();
 
 // Reactive state from the store
 const { 
@@ -157,14 +166,6 @@ const tableDisplayColumns = [
   { key: 'category', label: 'Kategori' },
   { key: 'actions', label: 'Aksi' }
 ];
-
-const getFullImageUrl = (imagePath: string | null | undefined): string => {
-  if (!imagePath) return ''; 
-  if (imagePath.startsWith('http')) {
-    return imagePath; 
-  }
-  return `${runtimeConfig.public.imgURL || runtimeConfig.public.imageCDN}/${imagePath.startsWith('/') ? imagePath.substring(1) : imagePath}`;
-};
 
 // Fetch initial data when component is mounted
 onMounted(() => {

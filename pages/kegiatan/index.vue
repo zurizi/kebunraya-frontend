@@ -1,16 +1,30 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useKegiatanStore } from "@/store/kegiatan";
-// import { useRuntimeConfig } from "#app"; // No longer directly needed
+// import { useRuntimeConfig } from "#app";
 import { useImageUtils } from '~/composables/useImageUtils';
+import { Splide, SplideSlide, SplideTrack } from '@splidejs/vue-splide';
+import '@splidejs/vue-splide/css'; // Import Splide's default CSS
 
 const kegiatanStore = useKegiatanStore();
-// const runtimeConfig = useRuntimeConfig(); // No longer directly needed
 const { getFirstImage, parseImageString } = useImageUtils();
-// const defaultPlaceholder = '/geometric-placeholder.svg'; // No longer needed
-
 
 const searchText = ref("");
+
+// Re-using the same options object definition as in konservasi/index.vue for consistency
+const cardSplideOptions = {
+  type: 'fade',
+  rewind: true,
+  perPage: 1,
+  arrows: false,
+  pagination: true,
+  drag: true,
+  // heightRatio: 0.8, // Relying on parent aspect-[5/4] - Ensure this is removed if present. It was commented.
+  classes: {
+    pagination: 'splide__pagination !bottom-1.5',
+    page: 'splide__pagination__page !w-2 !h-2 !mx-0.5 !bg-gray-400',
+  },
+};
 
 const updatePage = (page: number) => {
   kegiatanStore.updatePage(page);
@@ -59,22 +73,31 @@ onMounted(() => {
         :key="kegiatan.id"
         class="flex flex-col overflow-hidden shadow rounded-3xl relative"
       >
-        <div class="w-full aspect-[5/4] bg-gray-200 flex items-center justify-center">
+        <div class="w-full aspect-[5/4] bg-gray-200">
+          <Splide
+            v-if="getImageCount(kegiatan.gambar) > 1"
+            :options="cardSplideOptions"
+            :has-track="false"
+            aria-label="Kegiatan images"
+          >
+            <SplideTrack>
+              <SplideSlide v-for="(image, index) in parseImageString(kegiatan.gambar)" :key="index">
+                <img :src="image" :alt="`Gambar ${kegiatan.judul || 'Kegiatan'} ${index + 1}`" class="object-cover w-full h-full" />
+              </SplideSlide>
+            </SplideTrack>
+            <div class="splide__pagination !bottom-2"></div>
+          </Splide>
           <img
-            v-if="getFirstImage(kegiatan.gambar)"
+            v-else-if="getFirstImage(kegiatan.gambar)"
             :src="getFirstImage(kegiatan.gambar)!"
             :alt="`Gambar ${kegiatan.judul || 'Kegiatan'}`"
             class="object-cover w-full h-full"
           />
-          <span v-else class="text-gray-500 text-sm">Belum ada gambar</span>
+          <div v-else class="flex items-center justify-center w-full h-full">
+            <span class="text-gray-500 text-sm">Belum ada gambar</span>
+          </div>
         </div>
-        <div v-if="getImageCount(kegiatan.gambar) > 1"
-             class="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-full flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-          {{ getImageCount(kegiatan.gambar) }}
-        </div>
+        <!-- Removed multiple image count indicator -->
 
         <div class="flex flex-col w-full p-4 space-y-2">
           <div
