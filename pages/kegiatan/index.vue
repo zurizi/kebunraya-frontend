@@ -58,7 +58,7 @@ onMounted(() => {
                 ? `${
                     runtimeConfig.public.imgURL || runtimeConfig.public.imageCDN
                   }/${kegiatan.gambar}`
-                : '/placeholder-image.jpg'
+                : '/geometric-placeholder.svg'
             "
             :alt="`Gambar ${kegiatan.judul || 'Kegiatan'}`"
             class="object-cover w-full h-full" <!-- Fill container -->

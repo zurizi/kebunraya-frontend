@@ -57,7 +57,7 @@ onBeforeRouteLeave((to, from, next) => {
                 ? `${
                     runtimeConfig.public.imgURL || runtimeConfig.public.imageCDN
                   }/${plant.gambar}`
-                : '/placeholder-image.jpg'
+                : '/geometric-placeholder.svg'
             "
             :alt="`Gambar ${plant.nama_lokal || 'Tanaman'}`"
             class="object-cover w-full h-full" <!-- Fill container -->
