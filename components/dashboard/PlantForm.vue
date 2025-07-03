@@ -56,20 +56,23 @@
       <div>
         <label for="gambar" class="block text-sm font-medium text-gray-700">Gambar</label>
         <input 
-          type="file" 
-          id="gambar" 
-          @change="handleImageChange" 
-          accept="image/png, image/jpeg, image/gif" 
+          type="file"
+          id="gambar"
+          multiple
+          @change="handleImageChange"
+          accept="image/png, image/jpeg, image/gif"
           class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
         >
-        <div v-if="imagePreviewUrl" class="mt-2">
-          <img :src="imagePreviewUrl" alt="Preview Gambar Tanaman" class="max-h-40 w-auto rounded border p-1 shadow-sm" />
+        <div v-if="imagePreviewUrls.length" class="mt-2 grid grid-cols-3 gap-2">
+          <div v-for="(url, index) in imagePreviewUrls" :key="index" class="relative">
+            <img :src="url" alt="Preview Gambar Tanaman" class="max-h-40 w-auto rounded border p-1 shadow-sm" />
+          </div>
         </div>
       </div>
     </div>
 
     <div class="mt-6 flex justify-end space-x-3">
-       <button type="button" @click="$emit('close')" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+      <button type="button" @click="$emit('close')" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
         Batal
       </button>
       <button
@@ -106,7 +109,7 @@ const emit = defineEmits(['submit', 'close']); // Added 'close' to defineEmits
 const categoriesStore = useCategoriesStore();
 const { categoryList, categoryListPending, categoryListError } = storeToRefs(categoriesStore);
 
-const imagePreviewUrl = ref(null);
+const imagePreviewUrls = ref([]); // Changed to handle multiple previews
 
 const initialFormData = {
   nama_ilmiah: '',
@@ -117,67 +120,82 @@ const initialFormData = {
   perawakan: '',
   persebaran: '',
   deskripsi: '',
-  gambar: null,
+  gambar: [], // Changed to an array to hold multiple files
 };
 
 const formData = reactive({ ...initialFormData });
 
 function resetForm() {
-  Object.assign(formData, initialFormData); // Reset formData to initial empty state
-  if (imagePreviewUrl.value) {
-    URL.revokeObjectURL(imagePreviewUrl.value);
-    imagePreviewUrl.value = null;
-  }
+  Object.assign(formData, { ...initialFormData, gambar: [] }); // Ensure gambar is reset to an empty array
+  imagePreviewUrls.value.forEach(url => URL.revokeObjectURL(url));
+  imagePreviewUrls.value = [];
 }
 
 watch(() => props.initialData, (newData) => {
-  resetForm(); // Reset form before populating for edit or clearing for non-edit
+  resetForm();
   if (props.isEditMode && newData) {
-    for (const key in formData) {
+    for (const key in initialFormData) { // Iterate over initialFormData keys to avoid copying unexpected props
       if (newData.hasOwnProperty(key)) {
-        formData[key] = newData[key];
+        if (key === 'gambar') {
+          // Assuming initialData.gambar is an array of URLs or File objects
+          if (Array.isArray(newData.gambar)) {
+            formData.gambar = []; // Prepare for new File objects or keep existing if not changed
+            imagePreviewUrls.value = newData.gambar.map(img => {
+              if (typeof img === 'string') {
+                return img; // Existing image URL
+              } else if (img instanceof File) {
+                formData.gambar.push(img); // Add file to formData
+                return URL.createObjectURL(img); // Create preview URL
+              }
+              return null;
+            }).filter(url => url !== null);
+          } else if (typeof newData.gambar === 'string' && newData.gambar) {
+            // Handle case where initialData.gambar is a single URL string (backward compatibility)
+            imagePreviewUrls.value = [newData.gambar];
+            formData.gambar = []; // No files initially, just URL
+          } else {
+            formData.gambar = [];
+            imagePreviewUrls.value = [];
+          }
+        } else {
+          formData[key] = newData[key];
+        }
       }
     }
-    if (typeof newData.gambar === 'string' && newData.gambar) {
-      imagePreviewUrl.value = newData.gambar;
-      // formData.gambar is already set by the loop above
-    } else if (newData.gambar instanceof File) {
-      // This case is less likely for initialData from API but included for completeness
-      formData.gambar = newData.gambar;
-      imagePreviewUrl.value = URL.createObjectURL(newData.gambar);
-    }
-    // If newData.gambar is null or undefined, formData.gambar and imagePreviewUrl remain null due to resetForm
   }
 }, { immediate: true, deep: true });
 
 
 onMounted(() => {
   categoriesStore.fetchCategories();
-  // Watcher with immediate:true handles initial population or reset
 });
 
 const handleImageChange = (event) => {
-  const target = event.target;
-  const file = target.files?.[0];
+  const files = Array.from(event.target.files);
 
-  if (imagePreviewUrl.value) {
-    URL.revokeObjectURL(imagePreviewUrl.value);
-    imagePreviewUrl.value = null;
-  }
+  // Revoke old preview URLs
+  imagePreviewUrls.value.forEach(url => {
+    // Only revoke if it's an object URL created by createObjectURL
+    if (url.startsWith('blob:')) {
+      URL.revokeObjectURL(url);
+    }
+  });
+  imagePreviewUrls.value = [];
+  formData.gambar = []; // Reset images array
 
-  if (file) {
-    formData.gambar = file; // Correctly accessing reactive formData
-    imagePreviewUrl.value = URL.createObjectURL(file);
-  } else {
-    formData.gambar = null; // Ensure formData.gambar is also cleared
+  if (files.length > 0) {
+    formData.gambar = files; // Store File objects
+    imagePreviewUrls.value = files.map(file => URL.createObjectURL(file)); // Create new preview URLs
   }
 };
 
-// Cleanup object URL on component unmount
+// Cleanup object URLs on component unmount
 onUnmounted(() => {
-  if (imagePreviewUrl.value) {
-    URL.revokeObjectURL(imagePreviewUrl.value);
-  }
+  imagePreviewUrls.value.forEach(url => {
+    if (url.startsWith('blob:')) {
+      URL.revokeObjectURL(url);
+    }
+  });
 });
 
 const handleSubmit = () => {

@@ -213,8 +213,12 @@ export const usePlantsStore = defineStore("plants", () => {
     const formData = new FormData();
     for (const key in plantData) {
       if (plantData.hasOwnProperty(key)) {
-        if (key === "gambar" && plantData[key] instanceof File) {
-          formData.append(key, plantData[key], plantData[key].name);
+        if (key === "gambar" && Array.isArray(plantData[key])) {
+          plantData[key].forEach((file: File) => {
+            if (file instanceof File) {
+              formData.append('gambar[]', file, file.name); // Use gambar[] for arrays
+            }
+          });
         } else if (
           plantData[key] !== null &&
           plantData[key] !== undefined &&
@@ -252,10 +256,12 @@ export const usePlantsStore = defineStore("plants", () => {
 
     for (const key in plantData) {
       if (plantData.hasOwnProperty(key)) {
-        if (key === "gambar") {
-          if (plantData.gambar instanceof File) {
-            formData.append("gambar", plantData.gambar);
-          }
+        if (key === "gambar" && Array.isArray(plantData[key])) {
+          plantData[key].forEach((file: File) => {
+            if (file instanceof File) {
+              formData.append('gambar[]', file, file.name); // Use gambar[] for arrays
+            }
+          });
         } else if (
           plantData[key] !== null &&
           plantData[key] !== undefined &&

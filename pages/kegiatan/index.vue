@@ -51,17 +51,19 @@ onMounted(() => {
         :key="kegiatan.id"
         class="flex flex-col overflow-hidden shadow rounded-3xl"
       >
-        <img
-          :src="
-            kegiatan.gambar
-              ? `${
-                  runtimeConfig.public.imgURL || runtimeConfig.public.imageCDN
-                }/${kegiatan.gambar}`
-              : '/placeholder-image.jpg'
-          "
-          :alt="`Gambar ${kegiatan.judul || 'Kegiatan'}`"
-          class="object-cover w-full max-h-64"
-        />
+        <div class="w-full aspect-[5/4] bg-gray-200"> <!-- Aspect ratio container -->
+          <img
+            :src="
+              kegiatan.gambar
+                ? `${
+                    runtimeConfig.public.imgURL || runtimeConfig.public.imageCDN
+                  }/${kegiatan.gambar}`
+                : '/placeholder-image.jpg'
+            "
+            :alt="`Gambar ${kegiatan.judul || 'Kegiatan'}`"
+            class="object-cover w-full h-full" <!-- Fill container -->
+          />
+        </div>
 
         <div class="flex flex-col w-full p-4 space-y-2">
           <div

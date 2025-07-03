@@ -50,17 +50,19 @@ onBeforeRouteLeave((to, from, next) => {
         :key="plant.id"
         class="flex flex-col overflow-hidden shadow rounded-3xl"
       >
-        <img
-          :src="
-            plant.gambar
-              ? `${
-                  runtimeConfig.public.imgURL || runtimeConfig.public.imageCDN
-                }/${plant.gambar}`
-              : '/placeholder-image.jpg'
-          "
-          :alt="`Gambar ${plant.nama_lokal || 'Tanaman'}`"
-          class="object-cover w-full max-h-32 sm:max-h-48 xl:max-h-64"
-        />
+        <div class="w-full aspect-[5/4] bg-gray-200"> <!-- Aspect ratio container -->
+          <img
+            :src="
+              plant.gambar
+                ? `${
+                    runtimeConfig.public.imgURL || runtimeConfig.public.imageCDN
+                  }/${plant.gambar}`
+                : '/placeholder-image.jpg'
+            "
+            :alt="`Gambar ${plant.nama_lokal || 'Tanaman'}`"
+            class="object-cover w-full h-full" <!-- Fill container -->
+          />
+        </div>
 
         <div class="flex flex-col w-full p-2 space-y-1 md:space-y-2 md:p-4">
           <div class="flex w-full space-x-2 font-semibold">

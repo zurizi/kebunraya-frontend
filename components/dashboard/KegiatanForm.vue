@@ -45,15 +45,20 @@
     </div>
 
     <div>
-      <label for="gambar" class="block text-sm font-medium text-gray-700">Gambar</label>
+      <label for="gambar" class="block text-sm font-medium text-gray-700">Gambar (Bisa lebih dari satu)</label>
       <input
         type="file"
         id="gambar"
+        multiple
         @change="handleFileUpload"
+        accept="image/png, image/jpeg, image/gif"
         class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
       />
-      <img v-if="imagePreviewUrl && !form.gambar" :src="imagePreviewUrl" alt="Preview" class="mt-2 h-32 w-auto object-cover rounded-md"/>
-      <img v-if="form.gambar && typeof form.gambar !== 'string'" :src="newImagePreview" alt="New Preview" class="mt-2 h-32 w-auto object-cover rounded-md"/>
+      <div v-if="imagePreviewUrls.length" class="mt-2 grid grid-cols-3 gap-2">
+        <div v-for="(url, index) in imagePreviewUrls" :key="index" class="relative">
+          <img :src="url" alt="Preview Gambar Kegiatan" class="h-32 w-auto object-cover rounded-md shadow-sm" />
+        </div>
+      </div>
     </div>
 
     <div class="flex justify-end space-x-3">
@@ -87,7 +92,7 @@ interface FormDataType {
   tanggal: string; // YYYY-MM-DD
   lokasi: string;
   deskripsi: string;
-  gambar: File | string | null; // File for new/updated image, string for existing image URL, null if no image
+  gambar: File[]; // Changed to an array of Files
 }
 
 interface Props {
@@ -105,11 +110,10 @@ const form = ref<FormDataType>({
   tanggal: '',
   lokasi: '',
   deskripsi: '',
-  gambar: null,
+  gambar: [], // Initialize as empty array
 });
 
-const imagePreviewUrl = ref<string | null>(null); // For existing image preview
-const newImagePreview = ref<string | null>(null); // For new image preview before upload
+const imagePreviewUrls = ref<string[]>([]); // For multiple image previews
 
 const getFullImageUrl = (imagePath: string | null | undefined): string => {
   if (!imagePath) return '';
@@ -123,75 +127,132 @@ const getFullImageUrl = (imagePath: string | null | undefined): string => {
 onMounted(() => {
   if (props.isEditMode && props.initialData) {
     populateForm(props.initialData);
+  } else {
+    resetForm(); // Ensure form is reset if not in edit mode or no initial data
   }
 });
 
 watch(() => props.initialData, (newData) => {
   if (props.isEditMode && newData) {
     populateForm(newData);
+  } else {
+    resetForm(); // Reset if initialData becomes null or not in edit mode
   }
 }, { deep: true, immediate: true });
 
+function resetForm() {
+  form.value = {
+    judul: '',
+    tanggal: '',
+    lokasi: '',
+    deskripsi: '',
+    gambar: [],
+  };
+  imagePreviewUrls.value.forEach(url => {
+    if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+  });
+  imagePreviewUrls.value = [];
+  // Reset file input visually if possible (though direct manipulation is tricky)
+  const fileInput = document.getElementById('gambar') as HTMLInputElement;
+  if (fileInput) {
+    fileInput.value = '';
+  }
+}
 
 function populateForm(data: any) {
-  form.value = {
-    judul: data.judul || '',
-    tanggal: data.tanggal ? data.tanggal.split('T')[0] : '', // Assuming date might come as ISO string
-    lokasi: data.lokasi || '',
-    deskripsi: data.deskripsi || '',
-    gambar: null, // Will be set to existing URL string if no new file is chosen
-  };
-  if (data.gambar && typeof data.gambar === 'string') {
-    imagePreviewUrl.value = getFullImageUrl(data.gambar);
-  } else {
-    imagePreviewUrl.value = null;
+  form.value.judul = data.judul || '';
+  form.value.tanggal = data.tanggal ? data.tanggal.split('T')[0] : '';
+  form.value.lokasi = data.lokasi || '';
+  form.value.deskripsi = data.deskripsi || '';
+  form.value.gambar = []; // Reset gambar array in form
+
+  imagePreviewUrls.value.forEach(url => {
+    if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+  });
+  imagePreviewUrls.value = [];
+
+  if (data.gambar) {
+    const gambarData = Array.isArray(data.gambar) ? data.gambar : [data.gambar];
+    imagePreviewUrls.value = gambarData.map((g: string | File) => {
+      if (typeof g === 'string') {
+        return getFullImageUrl(g);
+      } else if (g instanceof File) {
+        // This case is unlikely for initialData from API, but good for consistency
+        // If initialData could contain File objects, they should be added to form.value.gambar here
+        // and their object URLs created for preview.
+        // For now, assuming initialData.gambar are URLs if not Files.
+        // form.value.gambar.push(g); // Example if files were part of initialData
+        return URL.createObjectURL(g); // This line might be problematic if g is not a File from initialData
+      }
+      return '';
+    }).filter(url => url);
+     // In edit mode, initialData.gambar are URLs. We don't repopulate form.value.gambar with Files
+     // until the user selects new files. The backend handles existing images separately.
   }
-  newImagePreview.value = null; // Reset new image preview
 }
 
 function handleFileUpload(event: Event) {
   const target = event.target as HTMLInputElement;
-  if (target.files && target.files[0]) {
-    const file = target.files[0];
-    form.value.gambar = file;
-    // Create a URL for previewing the new image
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      newImagePreview.value = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-    imagePreviewUrl.value = null; // Clear existing image preview if a new one is chosen
+  const files = target.files ? Array.from(target.files) : [];
+
+  // Revoke previous blob URLs
+  imagePreviewUrls.value.forEach(url => {
+    if (url.startsWith('blob:')) {
+      URL.revokeObjectURL(url);
+    }
+  });
+
+  if (files.length > 0) {
+    form.value.gambar = files; // Store new File objects
+    imagePreviewUrls.value = files.map(file => URL.createObjectURL(file));
+  } else {
+    // If no files selected (e.g., user cleared selection), clear existing previews and files
+    // This depends on whether clearing selection should remove existing images from server during edit
+    // For now, if user selects no files, we clear local files and previews.
+    // Backend logic will determine if existing images are kept or removed.
+    form.value.gambar = [];
+    imagePreviewUrls.value = [];
+     // If editing and had existing images, and user clears selection,
+     // we might want to revert to showing initialData's images.
+     // This part needs careful consideration of UX.
+     // For now, clearing selection clears previews.
+     if (props.isEditMode && props.initialData?.gambar) {
+        // Re-populate with initial non-file previews if user deselects new files
+        const initialGambarData = Array.isArray(props.initialData.gambar) ? props.initialData.gambar : [props.initialData.gambar];
+        imagePreviewUrls.value = initialGambarData.map((g: string) => getFullImageUrl(g)).filter(url => url);
+     }
   }
 }
 
 function submitForm() {
   if (networkStore.isOffline) {
     console.warn("Form submission prevented: application is offline.");
-    // Optionally: use $swal here if a more prominent user notification is desired directly from the form.
-    // const { $swal } = useNuxtApp(); // Make sure to import useNuxtApp
-    // $swal.fire('Offline', 'Tidak dapat mengirim formulir saat offline. Periksa koneksi Anda.', 'warning');
     return;
   }
 
-  const formData = new FormData();
-  formData.append('judul', form.value.judul);
-  formData.append('tanggal', form.value.tanggal);
-  formData.append('lokasi', form.value.lokasi);
-  formData.append('deskripsi', form.value.deskripsi);
+  const submissionData = new FormData();
+  submissionData.append('judul', form.value.judul);
+  submissionData.append('tanggal', form.value.tanggal);
+  submissionData.append('lokasi', form.value.lokasi);
+  submissionData.append('deskripsi', form.value.deskripsi);
 
-  if (form.value.gambar instanceof File) {
-    formData.append('gambar', form.value.gambar);
-  } else if (props.isEditMode && typeof form.value.gambar === 'string' && form.value.gambar) {
-    // If in edit mode and image is a string (path to existing), backend might not need it
-    // or might need a specific field to indicate "no change" or the path itself.
-    // For now, we only append if it's a new File.
-    // If the backend requires the existing image path to be sent back, adjust here.
+  // Append new image files
+  if (form.value.gambar && form.value.gambar.length > 0) {
+    form.value.gambar.forEach((file) => {
+      submissionData.append('gambar[]', file); // Use 'gambar[]' for array of files
+    });
+  } else if (props.isEditMode && (!form.value.gambar || form.value.gambar.length === 0)) {
+    // If in edit mode and no new files are selected,
+    // we might need to tell the backend to keep existing images.
+    // This is often handled by *not* sending the 'gambar' field at all,
+    // or sending a specific signal e.g. `gambar_is_cleared: true/false`.
+    // For now, if no new images, 'gambar[]' won't be appended.
+    // If initialData.gambar existed and user selected no new files,
+    // and the intention is to *remove* all images, that needs explicit handling.
+    // The current setup implies: new files replace old ones. No new files = keep old ones (if backend supports this).
   }
 
-  // If in edit mode and no new image is selected, initialData.gambar (string) might be needed by the parent.
-  // The current logic only sends a new file.
-  // If the parent needs to know if the image was cleared or kept, further logic is needed.
 
-  emit('submit', formData);
+  emit('submit', submissionData);
 }
 </script>
