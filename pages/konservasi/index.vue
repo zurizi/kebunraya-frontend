@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { usePlantsStore } from "@/store/plants";
+import { usePlantsStore } from "~/store/plants";
 
-import { onMounted, ref } from "vue";
+import { onMounted, ref, onBeforeUnmount } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
 import { useImageUtils } from "~/composables/useImageUtils";
 import { Splide, SplideSlide, SplideTrack } from "@splidejs/vue-splide";
@@ -44,6 +44,10 @@ onBeforeRouteLeave((to, from, next) => {
   plantsStore.resetCategory();
   next();
 });
+
+onBeforeUnmount(() => {
+  plantsStore.resetSearch();
+});
 </script>
 
 <template>
@@ -56,8 +60,8 @@ onBeforeRouteLeave((to, from, next) => {
       @search="handleSearch"
     />
 
-    <div v-if="plantsStore.pending">Loading tanaman...</div>
-    <div v-else-if="plantsStore.error">
+    <div v-if="plantsStore.plantsListPending">Loading tanaman...</div>
+    <div v-else-if="plantsStore.plantsListError">
       Terjadi kesalahan saat mengambil data tanaman.
     </div>
 
@@ -95,7 +99,7 @@ onBeforeRouteLeave((to, from, next) => {
           </Splide>
           <img
             v-else-if="getFirstImage(plant.gambar)"
-            :src="getFirstImage(plant.gambar)!"
+            :src="getFirstImage(plant.gambar) || ''"
             :alt="`Gambar ${plant.nama_lokal || 'Tanaman'}`"
             class="object-cover w-full h-full"
           />
@@ -170,7 +174,7 @@ onBeforeRouteLeave((to, from, next) => {
         plantsStore.plantList.length > 0 &&
         plantsStore.totalPages > 1
       "
-      v-model:currentPage="plantsStore.currentPage"
+      :currentPage="plantsStore.currentPage"
       :totalPages="plantsStore.totalPages"
       @page-change="plantsStore.updatePage"
     />

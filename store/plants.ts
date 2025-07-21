@@ -2,10 +2,12 @@
 import { defineStore } from "pinia";
 import { useNuxtApp, useRuntimeConfig } from "#app";
 import { ref } from "vue";
+import { useLoadingStore } from "./loading";
 
 export const usePlantsStore = defineStore("plants", () => {
   const { $api } = useNuxtApp();
   const runtimeConfig = useRuntimeConfig();
+  const loadingStore = useLoadingStore();
 
   // State untuk daftar tanaman
   const plantList = ref<any[]>([]);
@@ -34,6 +36,7 @@ export const usePlantsStore = defineStore("plants", () => {
   async function fetchPlants() {
     plantsListPending.value = true;
     plantsListError.value = null;
+    loadingStore.show();
     try {
       const response = await $api.get("/plants", {
         params: {
@@ -102,6 +105,7 @@ export const usePlantsStore = defineStore("plants", () => {
       }
     } finally {
       plantsListPending.value = false;
+      loadingStore.hide();
     }
   }
 
@@ -170,6 +174,11 @@ export const usePlantsStore = defineStore("plants", () => {
     totalPages.value = 1;
   }
 
+  function resetSearch() {
+    searchText.value = "";
+    currentPage.value = 1;
+  }
+
   return {
     plantList,
     plantsListPending,
@@ -192,6 +201,7 @@ export const usePlantsStore = defineStore("plants", () => {
     // category
     categoryId,
     resetCategory,
+    resetSearch,
 
     // Create plant
     plantCreateError,

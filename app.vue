@@ -106,13 +106,13 @@ const showMonitoringAlert = async () => {
               <div class="text-[50px] sm:text-[60px] md:text-[80px]"> <!-- Responsive text size for emoji -->
                 ${emoji}
               </div>
-              <div class="mb-2 text-lg sm:text-xl font-semibold"> <!-- Responsive text size for label -->
+              <div class="mb-2 text-lg font-semibold sm:text-xl"> <!-- Responsive text size for label -->
                 ${label}
               </div>
-              <p class="mb-2 text-xs sm:text-sm text-center"> <!-- Responsive text size for description -->
+              <p class="mb-2 text-xs text-center sm:text-sm"> <!-- Responsive text size for description -->
                 ${description}
               </p>
-              <div class="flex flex-col sm:flex-row items-start sm:items-end justify-between w-full mt-3">
+              <div class="flex flex-col items-start justify-between w-full mt-3 sm:flex-row sm:items-end">
                 <div class="flex flex-col space-y-0.5 font-semibold text-[10px] sm:text-xs"> <!-- Responsive text size -->
                   <span>CO : ${coValue} ppm</span>
                   <span>CO2 : ${co2Value} ppm</span>

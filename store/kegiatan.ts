@@ -2,9 +2,11 @@
 import { defineStore } from "pinia";
 import { useNuxtApp } from "#app";
 import { ref } from "vue";
+import { useLoadingStore } from "./loading";
 
 export const useKegiatanStore = defineStore("kegiatan", () => {
   const { $api } = useNuxtApp();
+  const loadingStore = useLoadingStore();
 
   const kegiatanList = ref<any[]>([]);
   const kegiatanListPending = ref(false);
@@ -25,6 +27,7 @@ export const useKegiatanStore = defineStore("kegiatan", () => {
   async function fetchKegiatanList() {
     kegiatanListPending.value = true;
     kegiatanListError.value = null;
+    loadingStore.show();
     try {
       const response = await $api.get("/kegiatan", {
         params: {
@@ -62,6 +65,7 @@ export const useKegiatanStore = defineStore("kegiatan", () => {
       }
     } finally {
       kegiatanListPending.value = false;
+      loadingStore.hide();
     }
   }
 
@@ -146,6 +150,11 @@ export const useKegiatanStore = defineStore("kegiatan", () => {
     fetchKegiatanList();
   }
 
+  function resetSearch() {
+    searchText.value = "";
+    currentPage.value = 1;
+  }
+
   return {
     kegiatanList,
     kegiatanListPending,
@@ -157,6 +166,7 @@ export const useKegiatanStore = defineStore("kegiatan", () => {
     fetchKegiatanList,
     updatePage,
     setSearchQuery,
+    resetSearch,
 
     kegiatanDetail,
     kegiatanDetailPending,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { useKegiatanStore } from "@/store/kegiatan";
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import { useKegiatanStore } from "~/store/kegiatan";
 // import { useRuntimeConfig } from "#app";
 import { useImageUtils } from '~/composables/useImageUtils';
 import { Splide, SplideSlide, SplideTrack } from '@splidejs/vue-splide';
@@ -32,7 +32,7 @@ const updatePage = (page: number) => {
 };
 
 const handleSearch = (searchValue: string) => {
-  kegiatanStore.setSearchText(searchValue);
+  kegiatanStore.setSearchQuery(searchValue);
 };
 
 const getImageCount = (imageString: string | null | undefined): number => {
@@ -41,6 +41,10 @@ const getImageCount = (imageString: string | null | undefined): number => {
 
 onMounted(() => {
   kegiatanStore.fetchKegiatanList();
+});
+
+onBeforeUnmount(() => {
+  kegiatanStore.resetSearch();
 });
 </script>
 
@@ -54,11 +58,11 @@ onMounted(() => {
       @search="handleSearch"
     />
 
-    <div v-if="kegiatanStore.pending" class="text-center">
+    <div v-if="kegiatanStore.kegiatanListPending" class="text-center">
       Loading kegiatan...
     </div>
 
-    <div v-else-if="kegiatanStore.error" class="text-center text-red-500">
+    <div v-else-if="kegiatanStore.kegiatanListError" class="text-center text-red-500">
       Terjadi kesalahan saat mengambil data kegiatan.
     </div>
 
@@ -89,7 +93,7 @@ onMounted(() => {
           </Splide>
           <img
             v-else-if="getFirstImage(kegiatan.gambar)"
-            :src="getFirstImage(kegiatan.gambar)!"
+            :src="getFirstImage(kegiatan.gambar) || ''"
             :alt="`Gambar ${kegiatan.judul || 'Kegiatan'}`"
             class="object-cover w-full h-full aspect-square"
           />
@@ -131,7 +135,7 @@ onMounted(() => {
         kegiatanStore.kegiatanList.length > 0 &&
         kegiatanStore.totalPages > 1
       "
-      v-model:currentPage="kegiatanStore.currentPage"
+      :currentPage="kegiatanStore.currentPage"
       :totalPages="kegiatanStore.totalPages"
       @page-change="updatePage"
     />
